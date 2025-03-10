@@ -26,7 +26,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-ROOT_URLCONF = 'store_service.urls'
+ROOT_URLCONF = 'store_app.urls'
 
 TEMPLATES = [
     {
@@ -44,7 +44,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'store_service.wsgi.application'
+WSGI_APPLICATION = 'store_app.wsgi.application'
 
 DATABASES = {
     'default': {

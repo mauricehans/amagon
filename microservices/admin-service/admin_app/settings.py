@@ -26,7 +26,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-ROOT_URLCONF = 'admin_service.urls'
+ROOT_URLCONF = 'admin_app.urls'
 
 TEMPLATES = [
     {
@@ -44,14 +44,15 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'admin_service.wsgi.application'
+WSGI_APPLICATION = 'admin_app.wsgi.application'
 
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'admin_app/admin_db.sqlite3'),
+        'NAME': os.path.join(BASE_DIR, 'admin_db.sqlite3'),
     }
 }
+
 
 LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'UTC'

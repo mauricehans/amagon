@@ -26,7 +26,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-ROOT_URLCONF = 'inventory_service.urls'
+ROOT_URLCONF = 'inventory_app.urls'
 
 TEMPLATES = [
     {
@@ -44,7 +44,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'inventory_service.wsgi.application'
+WSGI_APPLICATION =  'inventory_app.wsgi.application'
 
 DATABASES = {
     'default': {
