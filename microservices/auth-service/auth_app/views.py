@@ -90,11 +90,7 @@ def login(request):
         }
         token = jwt.encode(payload, settings.SECRET_KEY, algorithm='HS256')
         
-        return JsonResponse({
-            'message': 'Login successful',
-            'token': token,
-            'user': UserSerializer.serialize(user)
-        })
+        return JsonResponse({'status': 'authenticated'})
     except User.DoesNotExist:
         return JsonResponse({'error': 'Invalid credentials'}, status=401)
     except Exception as e:
