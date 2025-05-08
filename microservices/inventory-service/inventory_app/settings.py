@@ -44,7 +44,8 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION =  'inventory_app.wsgi.application'
+WSGI_APPLICATION = 'inventory_app.wsgi.application'
+
 
 DATABASES = {
     'default': {

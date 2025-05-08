@@ -46,6 +46,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'order_app.wsgi.application'
 
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
