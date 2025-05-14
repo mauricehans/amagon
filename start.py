@@ -1,12 +1,10 @@
 import subprocess
 import time
-import signal
 import sys
 import os
 from typing import Dict, List
 import threading
 import queue
-import atexit
 
 class ServiceManager:
     def __init__(self):
@@ -189,22 +187,11 @@ class ServiceManager:
             except Exception as e:
                 print(f"Error stopping {service_name}: {str(e)}")
 
-def signal_handler(signum, frame):
-    """Handle shutdown signals"""
-    print("\nReceived shutdown signal")
-    manager.cleanup()
-    sys.exit(0)
-
 if __name__ == "__main__":
-    # Register signal handlers
-    signal.signal(signal.SIGINT, signal_handler)
-    signal.signal(signal.SIGTERM, signal_handler)
-
-    # Register cleanup handler
-    manager = ServiceManager()
-    atexit.register(manager.cleanup)
-
     try:
+        # Create and start service manager
+        manager = ServiceManager()
+        
         # Start all services
         manager.start_all_services()
         
@@ -215,4 +202,5 @@ if __name__ == "__main__":
     except Exception as e:
         print(f"Unexpected error: {str(e)}")
     finally:
-        manager.cleanup()
+        if 'manager' in locals():
+            manager.cleanup()
