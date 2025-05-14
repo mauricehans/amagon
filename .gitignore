@@ -1,29 +1,50 @@
-# Fichiers système
-.DS_Store
-*.local
-
-# Logs
-*.log
-npm-debug.log*
-
-# Environnements virtuels
-.env/
-venv/
-
-# Django
+# Python
 __pycache__/
 *.py[cod]
-*.sqlite3
+*$py.class
+*.so
+.Python
+env/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+*.egg-info/
+.installed.cfg
+*.egg
 
-# Node.js
+# Node
 node_modules/
 dist/
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
 
-# IDE
-.vscode/
+# Django
+*.log
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+
+# IDEs
 .idea/
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
