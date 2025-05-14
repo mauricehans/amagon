@@ -30,7 +30,7 @@ const Header: React.FC = () => {
           {/* Logo */}
           <div className="flex items-center">
             <Link to="/" className="mr-4">
-              <h1 className="text-2xl font-bold tracking-wide">amazon</h1>
+              <h1 className="text-2xl font-bold tracking-wide">amagon</h1>
             </Link>
 
             {/* Location */}

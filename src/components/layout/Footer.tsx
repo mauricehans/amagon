@@ -31,9 +31,9 @@ const Footer: React.FC = () => {
         <div>
           <h3 className="font-bold mb-3">Make Money with Us</h3>
           <ul className="space-y-2 text-sm text-gray-300">
-            <li><Link to="/sell" className="hover:text-white hover:underline">Sell on Amazon</Link></li>
+            <li><Link to="/sell" className="hover:text-white hover:underline">Sell on Amagon</Link></li>
             <li><Link to="/associates" className="hover:text-white hover:underline">Become an Affiliate</Link></li>
-            <li><Link to="/fulfillment" className="hover:text-white hover:underline">Fulfillment by Amazon</Link></li>
+            <li><Link to="/fulfillment" className="hover:text-white hover:underline">Fulfillment by Amagon</Link></li>
             <li><Link to="/handmade" className="hover:text-white hover:underline">Handmade</Link></li>
           </ul>
         </div>
@@ -41,7 +41,7 @@ const Footer: React.FC = () => {
         <div>
           <h3 className="font-bold mb-3">Payment Products</h3>
           <ul className="space-y-2 text-sm text-gray-300">
-            <li><Link to="/business-card" className="hover:text-white hover:underline">Amazon Business Card</Link></li>
+            <li><Link to="/business-card" className="hover:text-white hover:underline">Amagon Business Card</Link></li>
             <li><Link to="/shop-with-points" className="hover:text-white hover:underline">Shop with Points</Link></li>
             <li><Link to="/reload-balance" className="hover:text-white hover:underline">Reload Your Balance</Link></li>
             <li><Link to="/currency-converter" className="hover:text-white hover:underline">Currency Converter</Link></li>
@@ -63,12 +63,12 @@ const Footer: React.FC = () => {
       <div className="border-t border-gray-700">
         <div className="container-custom py-6 text-center">
           <Link to="/" className="inline-block mb-4">
-            <h2 className="text-2xl font-bold tracking-wide">amazon</h2>
+            <h2 className="text-2xl font-bold tracking-wide">amagon</h2>
           </Link>
           
           <div className="text-xs text-gray-400 max-w-2xl mx-auto">
             <p className="mb-2">
-              This is a demo clone of Amazon for educational purposes only. Not affiliated with Amazon.
+              This is a demo clone of Amagon for educational purposes only. Not affiliated with Amazon.
             </p>
             <div className="flex flex-wrap justify-center gap-4 mt-4">
               <Link to="/conditions" className="hover:text-white hover:underline">Conditions of Use</Link>
@@ -76,7 +76,7 @@ const Footer: React.FC = () => {
               <Link to="/cookies" className="hover:text-white hover:underline">Cookies Notice</Link>
               <Link to="/interest-based-ads" className="hover:text-white hover:underline">Interest-Based Ads</Link>
             </div>
-            <p className="mt-4">© 2025 Amazon Clone. All rights reserved.</p>
+            <p className="mt-4">© 2025 Amagon. All rights reserved.</p>
           </div>
         </div>
       </div>
