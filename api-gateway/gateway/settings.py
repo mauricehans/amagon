@@ -22,6 +22,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'corsheaders',
+    'channels',
 ]
 
 MIDDLEWARE = [
@@ -56,11 +57,25 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'gateway.wsgi.application'
+ASGI_APPLICATION = 'gateway.asgi.application'
+
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            "hosts": [('127.0.0.1', 6379)],
+        },
+    },
+}
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'gateway_db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'gateway_db',
+        'USER': 'postgres',
+        'PASSWORD': 'postgres',
+        'HOST': 'localhost',
+        'PORT': '5432',
     }
 }
 
@@ -96,9 +111,12 @@ CORS_ALLOWED_ORIGINS = [
 MICROSERVICES = {
     'auth': 'http://localhost:8001',
     'product': 'http://localhost:8002',
-    'order': 'http://localhost:8003',
-    'inventory': 'http://localhost:8004',
-    'seller': 'http://localhost:8005',
-    'store': 'http://localhost:8006',
-    'admin': 'http://localhost:8007',
+    'inventory': 'http://localhost:8003',
+    'notification': 'http://localhost:8004',
+    'store': 'http://localhost:8005',
 }
+
+# JWT Settings
+JWT_SECRET_KEY = 'your-jwt-secret-key'
+JWT_ALGORITHM = 'HS256'
+JWT_EXPIRATION_DELTA = 24 * 60 * 60  # 24 hours in seconds

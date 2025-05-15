@@ -1,27 +1,42 @@
 from django.db import models
+import uuid
+
+class Category(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    name = models.CharField(max_length=255)
+    description = models.TextField(null=True)
+    parent = models.ForeignKey('self', null=True, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'categories'
 
 class Product(models.Model):
-    title = models.CharField(max_length=255)
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    name = models.CharField(max_length=255)
     description = models.TextField()
+    category = models.ForeignKey(Category, on_delete=models.CASCADE)
+    sku = models.CharField(max_length=50, unique=True)
     price = models.DecimalField(max_digits=10, decimal_places=2)
-    image = models.URLField()
-    category = models.CharField(max_length=100)
-    seller_id = models.UUIDField()
-    stock = models.IntegerField(default=0)
-    rating = models.DecimalField(max_digits=3, decimal_places=2, default=0)
-    review_count = models.IntegerField(default=0)
+    cost = models.DecimalField(max_digits=10, decimal_places=2)
+    unit = models.CharField(max_length=50)  # pièce, kg, litre, etc.
+    barcode = models.CharField(max_length=100, null=True)
+    weight = models.DecimalField(max_digits=10, decimal_places=2, null=True)
+    dimensions = models.JSONField(null=True)  # {length, width, height}
+    is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         db_table = 'products'
 
-class Review(models.Model):
-    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='reviews')
-    user_id = models.UUIDField()
-    rating = models.IntegerField()
-    comment = models.TextField()
+class ProductImage(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='images')
+    url = models.URLField()
+    is_primary = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        db_table = 'reviews'
+        db_table = 'product_images'
