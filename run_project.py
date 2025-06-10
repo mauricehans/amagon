@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Script Python pour lancer automatiquement tout le projet Amagon
+Script Python amélioré pour lancer automatiquement tout le projet Amagon
 Gère l'installation des dépendances, la configuration des bases de données et le démarrage des services
 """
 
@@ -10,8 +10,9 @@ import sys
 import time
 import threading
 import signal
+import json
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Tuple
 
 class Colors:
     """Couleurs pour l'affichage dans le terminal"""
@@ -30,64 +31,73 @@ class ProjectLauncher:
         self.processes: Dict[str, subprocess.Popen] = {}
         self.should_run = True
         self.root_dir = Path(__file__).parent
+        self.ready_services = set()
         
         # Configuration des services
         self.services = {
             "API Gateway": {
                 "path": "api-gateway",
                 "port": 8000,
-                "cmd": ["python", "manage.py", "runserver", "8000"],
+                "cmd": [sys.executable, "manage.py", "runserver", "8000"],
                 "ready_message": "Starting development server at http://127.0.0.1:8000/",
-                "requirements": "requirements.txt"
+                "requirements": "requirements.txt",
+                "health_check": "http://localhost:8000/admin/"
             },
             "Auth Service": {
                 "path": "microservices/auth-service",
                 "port": 8001,
-                "cmd": ["python", "manage.py", "runserver", "8001"],
+                "cmd": [sys.executable, "manage.py", "runserver", "8001"],
                 "ready_message": "Starting development server at http://127.0.0.1:8001/",
-                "requirements": "requirements.txt"
+                "requirements": "requirements.txt",
+                "health_check": "http://localhost:8001/admin/"
             },
             "Product Service": {
                 "path": "microservices/product-service",
                 "port": 8002,
-                "cmd": ["python", "manage.py", "runserver", "8002"],
+                "cmd": [sys.executable, "manage.py", "runserver", "8002"],
                 "ready_message": "Starting development server at http://127.0.0.1:8002/",
-                "requirements": "requirements.txt"
+                "requirements": "requirements.txt",
+                "health_check": "http://localhost:8002/admin/"
             },
             "Order Service": {
                 "path": "microservices/order-service",
                 "port": 8003,
-                "cmd": ["python", "manage.py", "runserver", "8003"],
+                "cmd": [sys.executable, "manage.py", "runserver", "8003"],
                 "ready_message": "Starting development server at http://127.0.0.1:8003/",
-                "requirements": "requirements.txt"
+                "requirements": "requirements.txt",
+                "health_check": "http://localhost:8003/admin/"
             },
             "Inventory Service": {
                 "path": "microservices/inventory-service",
                 "port": 8004,
-                "cmd": ["python", "manage.py", "runserver", "8004"],
+                "cmd": [sys.executable, "manage.py", "runserver", "8004"],
                 "ready_message": "Starting development server at http://127.0.0.1:8004/",
-                "requirements": "requirements.txt"
+                "requirements": "requirements.txt",
+                "health_check": "http://localhost:8004/admin/"
             },
             "Seller Service": {
                 "path": "microservices/seller-service",
                 "port": 8005,
-                "cmd": ["python", "manage.py", "runserver", "8005"],
+                "cmd": [sys.executable, "manage.py", "runserver", "8005"],
                 "ready_message": "Starting development server at http://127.0.0.1:8005/",
-                "requirements": "requirements.txt"
+                "requirements": "requirements.txt",
+                "health_check": "http://localhost:8005/admin/"
             },
             "Store Service": {
                 "path": "microservices/store-service",
                 "port": 8006,
-                "cmd": ["python", "manage.py", "runserver", "8006"],
+                "cmd": [sys.executable, "manage.py", "runserver", "8006"],
                 "ready_message": "Starting development server at http://127.0.0.1:8006/",
-                "requirements": "requirements.txt"
+                "requirements": "requirements.txt",
+                "health_check": "http://localhost:8006/admin/"
             },
             "Frontend": {
                 "path": ".",
                 "port": 5173,
                 "cmd": ["npm", "run", "dev"],
                 "ready_message": "Local:",
-                "requirements": "package.json"
+                "requirements": "package.json",
+                "health_check": "http://localhost:5173"
             }
         }
 
@@ -97,9 +107,9 @@ class ProjectLauncher:
 
     def print_header(self, message: str):
         """Affiche un en-tête"""
-        self.print_colored(f"\n{'='*60}", Colors.HEADER)
+        self.print_colored(f"\n{'='*70}", Colors.HEADER)
         self.print_colored(f"  {message}", Colors.HEADER + Colors.BOLD)
-        self.print_colored(f"{'='*60}", Colors.HEADER)
+        self.print_colored(f"{'='*70}", Colors.HEADER)
 
     def run_command(self, command: str, cwd: Optional[str] = None, capture_output: bool = True) -> Optional[str]:
         """Exécute une commande shell"""
@@ -164,6 +174,7 @@ class ProjectLauncher:
         # Installer les dépendances frontend
         self.print_colored("📦 Installation des dépendances frontend...", Colors.OKBLUE)
         if not self.run_command("npm install", cwd=self.root_dir):
+            self.print_colored("❌ Échec de l'installation des dépendances frontend", Colors.FAIL)
             return False
         self.print_colored("✅ Dépendances frontend installées", Colors.OKGREEN)
 
@@ -177,7 +188,7 @@ class ProjectLauncher:
             
             if requirements_file.exists():
                 self.print_colored(f"📦 Installation des dépendances pour {service_name}...", Colors.OKBLUE)
-                if not self.run_command(f"pip install -r {config['requirements']}", cwd=service_path):
+                if not self.run_command(f"{sys.executable} -m pip install -r {config['requirements']}", cwd=service_path):
                     self.print_colored(f"⚠️  Échec de l'installation pour {service_name}", Colors.WARNING)
                 else:
                     self.print_colored(f"✅ Dépendances installées pour {service_name}", Colors.OKGREEN)
@@ -186,35 +197,41 @@ class ProjectLauncher:
 
         return True
 
-    def setup_databases(self) -> bool:
-        """Configure toutes les bases de données"""
-        self.print_header("Configuration des bases de données")
+    def check_databases(self) -> bool:
+        """Vérifie si les bases de données existent"""
+        self.print_header("Vérification des bases de données")
         
-        for service_name, config in self.services.items():
-            if service_name == "Frontend":
-                continue
-                
-            service_path = self.root_dir / config["path"]
-            manage_py = service_path / "manage.py"
+        db_files = {
+            "API Gateway": "api-gateway/gateway_db.sqlite3",
+            "Auth Service": "microservices/auth-service/auth_db.sqlite3",
+            "Product Service": "microservices/product-service/product_db.sqlite3",
+            "Order Service": "microservices/order-service/order_db.sqlite3",
+            "Inventory Service": "microservices/inventory-service/inventory_db.sqlite3",
+            "Seller Service": "microservices/seller-service/seller_db.sqlite3",
+            "Store Service": "microservices/store-service/store_db.sqlite3",
+        }
+        
+        missing_dbs = []
+        for service_name, db_path in db_files.items():
+            db_file = self.root_dir / db_path
+            if db_file.exists():
+                db_size = db_file.stat().st_size
+                self.print_colored(f"✅ {service_name}: {db_path} ({db_size} bytes)", Colors.OKGREEN)
+            else:
+                self.print_colored(f"❌ {service_name}: {db_path} manquant", Colors.FAIL)
+                missing_dbs.append(service_name)
+        
+        if missing_dbs:
+            self.print_colored(f"\n⚠️  Bases de données manquantes détectées!", Colors.WARNING)
+            self.print_colored(f"Services concernés: {', '.join(missing_dbs)}", Colors.WARNING)
+            self.print_colored(f"Exécution de setup_databases.py...", Colors.OKBLUE)
             
-            if not manage_py.exists():
-                self.print_colored(f"⚠️  manage.py non trouvé pour {service_name}", Colors.WARNING)
-                continue
-            
-            self.print_colored(f"🔧 Configuration de la base de données pour {service_name}...", Colors.OKBLUE)
-            
-            # Makemigrations
-            if not self.run_command("python manage.py makemigrations", cwd=service_path):
-                self.print_colored(f"⚠️  Échec de makemigrations pour {service_name}", Colors.WARNING)
-                continue
-            
-            # Migrate
-            if not self.run_command("python manage.py migrate", cwd=service_path):
-                self.print_colored(f"❌ Échec de migrate pour {service_name}", Colors.FAIL)
+            if not self.run_command(f"{sys.executable} setup_databases.py", cwd=self.root_dir, capture_output=False):
+                self.print_colored("❌ Échec de la configuration des bases de données", Colors.FAIL)
                 return False
             
-            self.print_colored(f"✅ Base de données configurée pour {service_name}", Colors.OKGREEN)
-
+            self.print_colored("✅ Bases de données configurées", Colors.OKGREEN)
+        
         return True
 
     def start_service(self, service_name: str, config: Dict) -> bool:
@@ -246,9 +263,23 @@ class ProjectLauncher:
                     try:
                         line = process.stdout.readline()
                         if line:
-                            print(f"[{service_name}] {line.strip()}")
+                            line = line.strip()
+                            print(f"[{service_name}] {line}")
+                            
                             if config["ready_message"] in line:
+                                self.ready_services.add(service_name)
                                 self.print_colored(f"✅ {service_name} est prêt sur le port {config['port']}", Colors.OKGREEN)
+                    except:
+                        break
+                        
+                # Surveiller stderr
+                while self.should_run and process.poll() is None:
+                    try:
+                        line = process.stderr.readline()
+                        if line:
+                            line = line.strip()
+                            if line and not line.startswith("Watching for file changes"):
+                                print(f"[{service_name}] {line}")
                     except:
                         break
             
@@ -262,21 +293,37 @@ class ProjectLauncher:
             self.print_colored(f"❌ Erreur lors du démarrage de {service_name}: {e}", Colors.FAIL)
             return False
 
+    def wait_for_services(self, services: List[str], timeout: int = 60) -> bool:
+        """Attend que les services soient prêts"""
+        self.print_colored(f"⏳ Attente que les services soient prêts...", Colors.WARNING)
+        
+        start_time = time.time()
+        while time.time() - start_time < timeout:
+            ready_count = len([s for s in services if s in self.ready_services])
+            if ready_count == len(services):
+                return True
+            
+            self.print_colored(f"   Services prêts: {ready_count}/{len(services)}", Colors.OKCYAN)
+            time.sleep(2)
+        
+        return False
+
     def start_all_services(self) -> bool:
         """Démarre tous les services"""
         self.print_header("Démarrage des services")
         
         # Démarrer les services backend d'abord
-        backend_services = {k: v for k, v in self.services.items() if k != "Frontend"}
+        backend_services = [name for name in self.services.keys() if name != "Frontend"]
         
-        for service_name, config in backend_services.items():
+        for service_name in backend_services:
+            config = self.services[service_name]
             if not self.start_service(service_name, config):
                 return False
-            time.sleep(2)  # Attendre un peu entre chaque service
+            time.sleep(1)  # Attendre un peu entre chaque service
         
         # Attendre que les services backend soient prêts
-        self.print_colored("⏳ Attente que les services backend soient prêts...", Colors.WARNING)
-        time.sleep(5)
+        if not self.wait_for_services(backend_services, timeout=30):
+            self.print_colored("⚠️  Certains services backend ne sont pas prêts", Colors.WARNING)
         
         # Démarrer le frontend
         if not self.start_service("Frontend", self.services["Frontend"]):
@@ -292,15 +339,36 @@ class ProjectLauncher:
             if service_name in self.processes:
                 process = self.processes[service_name]
                 if process.poll() is None:
-                    self.print_colored(f"✅ {service_name} - En cours d'exécution sur le port {config['port']}", Colors.OKGREEN)
+                    status = "🟢 En cours" if service_name in self.ready_services else "🟡 Démarrage"
+                    self.print_colored(f"{status} {service_name} - Port {config['port']}", Colors.OKGREEN if service_name in self.ready_services else Colors.WARNING)
                 else:
-                    self.print_colored(f"❌ {service_name} - Arrêté", Colors.FAIL)
+                    self.print_colored(f"🔴 {service_name} - Arrêté", Colors.FAIL)
             else:
                 self.print_colored(f"⚪ {service_name} - Non démarré", Colors.WARNING)
         
-        self.print_colored(f"\n🌐 Application disponible sur:", Colors.OKBLUE)
+        self.print_colored(f"\n🌐 URLs d'accès:", Colors.OKBLUE)
         self.print_colored(f"   Frontend: http://localhost:5173", Colors.OKCYAN)
         self.print_colored(f"   API Gateway: http://localhost:8000", Colors.OKCYAN)
+        self.print_colored(f"   Admin Auth: http://localhost:8001/admin/ (admin/admin123)", Colors.OKCYAN)
+
+    def show_project_info(self):
+        """Affiche les informations du projet"""
+        self.print_colored(f"""
+{Colors.OKGREEN}🎉 Projet Amagon lancé avec succès!{Colors.ENDC}
+
+{Colors.OKBLUE}📋 Informations importantes:{Colors.ENDC}
+• Frontend React: http://localhost:5173
+• API Gateway: http://localhost:8000
+• Interface Admin: http://localhost:8001/admin/
+• Compte admin: admin / admin123
+
+{Colors.OKBLUE}🗄️ Bases de données SQLite:{Colors.ENDC}
+• Toutes les données sont stockées localement
+• Pas besoin de PostgreSQL ou MySQL
+• Fichiers .sqlite3 dans chaque service
+
+{Colors.WARNING}⚠️  Pour arrêter tous les services: Ctrl+C{Colors.ENDC}
+""")
 
     def cleanup(self):
         """Arrête tous les services"""
@@ -311,10 +379,15 @@ class ProjectLauncher:
             try:
                 self.print_colored(f"   Arrêt de {service_name}...", Colors.WARNING)
                 process.terminate()
-                process.wait(timeout=5)
-            except subprocess.TimeoutExpired:
-                self.print_colored(f"   Forçage de l'arrêt de {service_name}...", Colors.WARNING)
-                process.kill()
+                
+                # Attendre un peu pour l'arrêt gracieux
+                try:
+                    process.wait(timeout=5)
+                except subprocess.TimeoutExpired:
+                    self.print_colored(f"   Forçage de l'arrêt de {service_name}...", Colors.WARNING)
+                    process.kill()
+                    process.wait()
+                    
             except Exception as e:
                 self.print_colored(f"   Erreur lors de l'arrêt de {service_name}: {e}", Colors.FAIL)
         
@@ -327,7 +400,7 @@ class ProjectLauncher:
 {Colors.HEADER}{Colors.BOLD}
 ╔══════════════════════════════════════════════════════════════╗
 ║                     🛒 AMAGON PROJECT                        ║
-║                  Lanceur automatique                         ║
+║                  Lanceur automatique v2.0                   ║
 ╚══════════════════════════════════════════════════════════════╝
 {Colors.ENDC}""")
             
@@ -341,8 +414,8 @@ class ProjectLauncher:
                 self.print_colored("❌ Échec de l'installation des dépendances", Colors.FAIL)
                 return False
             
-            # Configurer les bases de données
-            if not self.setup_databases():
+            # Vérifier et configurer les bases de données
+            if not self.check_databases():
                 self.print_colored("❌ Échec de la configuration des bases de données", Colors.FAIL)
                 return False
             
@@ -351,14 +424,14 @@ class ProjectLauncher:
                 self.print_colored("❌ Échec du démarrage des services", Colors.FAIL)
                 return False
             
-            # Afficher le statut
+            # Attendre un peu pour que tout se stabilise
             time.sleep(3)
+            
+            # Afficher le statut
             self.show_status()
+            self.show_project_info()
             
             # Attendre l'interruption
-            self.print_colored(f"\n{Colors.OKGREEN}🎉 Projet lancé avec succès!{Colors.ENDC}")
-            self.print_colored(f"{Colors.WARNING}Appuyez sur Ctrl+C pour arrêter tous les services{Colors.ENDC}")
-            
             try:
                 while self.should_run:
                     time.sleep(1)
