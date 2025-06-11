@@ -106,7 +106,9 @@ MICROSERVICES = {
     'product': 'http://localhost:8002',
     'inventory': 'http://localhost:8003',
     'notification': 'http://localhost:8004',
-    'store': 'http://localhost:8005',
+    'seller': 'http://localhost:8005',
+    'store': 'http://localhost:8006',
+    'order': 'http://localhost:8007',
 }
 
 # JWT Settings

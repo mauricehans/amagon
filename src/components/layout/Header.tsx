@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Search, ShoppingCart, User, Menu, X, MapPin } from 'lucide-react';
+import { Search, ShoppingCart, User, Menu, X, MapPin, Store } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
 import { useAuth } from '../../context/AuthContext';
 
@@ -64,6 +64,15 @@ const Header: React.FC = () => {
 
           {/* Right navigation */}
           <div className="flex items-center space-x-4">
+            {/* Seller link */}
+            <Link to="/seller/login" className="hidden md:flex items-center text-sm hover:text-amazon-yellow">
+              <Store size={18} className="mr-1" />
+              <div>
+                <div className="text-gray-300 text-xs">Sell on</div>
+                <div className="font-bold">Amagon</div>
+              </div>
+            </Link>
+
             {/* Account */}
             <div className="hidden md:block">
               {isAuthenticated ? (
@@ -126,6 +135,7 @@ const Header: React.FC = () => {
             <Link to="/category/fashion" className="hover:text-amazon-yellow">Fashion</Link>
             <Link to="/category/toys" className="hover:text-amazon-yellow">Toys & Games</Link>
             <Link to="/deals" className="font-bold text-amazon-yellow hover:underline">Today's Deals</Link>
+            <Link to="/seller/login" className="font-bold text-amazon-orange hover:underline">Sell on Amagon</Link>
           </nav>
         </div>
 
@@ -181,6 +191,12 @@ const Header: React.FC = () => {
                 <Link to="/category/fashion" className="block" onClick={() => setIsMenuOpen(false)}>Fashion</Link>
                 <Link to="/category/toys" className="block" onClick={() => setIsMenuOpen(false)}>Toys & Games</Link>
                 <Link to="/deals" className="block font-bold text-amazon-orange" onClick={() => setIsMenuOpen(false)}>Today's Deals</Link>
+              </nav>
+              
+              <h2 className="text-lg font-bold border-b pb-2 mb-3 mt-6">Sell</h2>
+              <nav className="space-y-3">
+                <Link to="/seller/login" className="block text-amazon-orange font-medium" onClick={() => setIsMenuOpen(false)}>Seller Login</Link>
+                <Link to="/seller/register" className="block" onClick={() => setIsMenuOpen(false)}>Become a Seller</Link>
               </nav>
               
               <h2 className="text-lg font-bold border-b pb-2 mb-3 mt-6">Your Account</h2>
