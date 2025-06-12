@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Script Python amélioré pour lancer automatiquement tout le projet Amagon
-Gère l'installation des dépendances, la configuration des bases de données et le démarrage des services
+Script Python optimisé pour lancer automatiquement tout le projet Amagon
+Vérifie les dépendances avant installation et gère npm sur Windows
 """
 
 import os
@@ -111,10 +111,10 @@ class ProjectLauncher:
         self.print_colored(f"  {message}", Colors.HEADER + Colors.BOLD)
         self.print_colored(f"{'='*70}", Colors.HEADER)
 
-    def run_command(self, command: str, cwd: Optional[str] = None, capture_output: bool = True) -> Optional[str]:
+    def run_command(self, command: str, cwd: Optional[str] = None, capture_output: bool = True, shell: bool = False) -> Optional[str]:
         """Exécute une commande shell"""
         try:
-            if isinstance(command, str):
+            if isinstance(command, str) and not shell:
                 command = command.split()
             
             result = subprocess.run(
@@ -122,21 +122,24 @@ class ProjectLauncher:
                 cwd=cwd,
                 capture_output=capture_output,
                 text=True,
-                check=True
+                check=True,
+                shell=shell
             )
             return result.stdout if capture_output else None
         except subprocess.CalledProcessError as e:
-            self.print_colored(f"❌ Erreur lors de l'exécution de '{' '.join(command)}': {e}", Colors.FAIL)
+            self.print_colored(f"❌ Erreur lors de l'exécution de '{command if shell else ' '.join(command)}': {e}", Colors.FAIL)
             if capture_output and e.stderr:
                 self.print_colored(f"Détails: {e.stderr}", Colors.FAIL)
             return None
         except FileNotFoundError:
-            self.print_colored(f"❌ Commande non trouvée: {command[0]}", Colors.FAIL)
+            self.print_colored(f"❌ Commande non trouvée: {command[0] if not shell else command}", Colors.FAIL)
             return None
 
     def check_dependencies(self) -> bool:
         """Vérifie que Python et Node.js sont installés"""
         self.print_header("Vérification des dépendances système")
+        
+        dependencies_ok = True
         
         # Vérifier Python
         try:
@@ -145,7 +148,7 @@ class ProjectLauncher:
             self.print_colored(f"✅ {python_version} trouvé", Colors.OKGREEN)
         except:
             self.print_colored("❌ Python non trouvé", Colors.FAIL)
-            return False
+            dependencies_ok = False
 
         # Vérifier Node.js
         try:
@@ -154,31 +157,72 @@ class ProjectLauncher:
             self.print_colored(f"✅ Node.js {node_version} trouvé", Colors.OKGREEN)
         except:
             self.print_colored("❌ Node.js non trouvé", Colors.FAIL)
-            return False
+            dependencies_ok = False
 
-        # Vérifier npm
+        # Vérifier npm avec différentes méthodes pour Windows
+        npm_found = False
         try:
-            result = subprocess.run(["npm", "--version"], capture_output=True, text=True)
-            npm_version = result.stdout.strip()
-            self.print_colored(f"✅ npm {npm_version} trouvé", Colors.OKGREEN)
+            # Essayer d'abord avec npm.cmd (Windows)
+            result = subprocess.run(["npm.cmd", "--version"], capture_output=True, text=True, shell=True)
+            if result.returncode == 0:
+                npm_version = result.stdout.strip()
+                self.print_colored(f"✅ npm {npm_version} trouvé", Colors.OKGREEN)
+                npm_found = True
         except:
-            self.print_colored("❌ npm non trouvé", Colors.FAIL)
-            return False
-
-        return True
-
-    def install_dependencies(self) -> bool:
-        """Installe toutes les dépendances"""
-        self.print_header("Installation des dépendances")
+            pass
         
-        # Installer les dépendances frontend
-        self.print_colored("📦 Installation des dépendances frontend...", Colors.OKBLUE)
-        if not self.run_command("npm install", cwd=self.root_dir):
-            self.print_colored("❌ Échec de l'installation des dépendances frontend", Colors.FAIL)
-            return False
-        self.print_colored("✅ Dépendances frontend installées", Colors.OKGREEN)
+        if not npm_found:
+            try:
+                # Essayer avec npm
+                result = subprocess.run(["npm", "--version"], capture_output=True, text=True, shell=True)
+                if result.returncode == 0:
+                    npm_version = result.stdout.strip()
+                    self.print_colored(f"✅ npm {npm_version} trouvé", Colors.OKGREEN)
+                    npm_found = True
+            except:
+                pass
+        
+        if not npm_found:
+            self.print_colored("❌ npm non trouvé", Colors.FAIL)
+            dependencies_ok = False
 
-        # Installer les dépendances Python pour chaque service
+        return dependencies_ok
+
+    def check_dependencies_installed(self) -> dict:
+        """Vérifie quelles dépendances sont déjà installées"""
+        self.print_header("Vérification des dépendances installées")
+        
+        status = {
+            'frontend': False,
+            'services': {}
+        }
+        
+        # Vérifier les dépendances frontend
+        node_modules = self.root_dir / "node_modules"
+        package_json = self.root_dir / "package.json"
+        
+        if node_modules.exists() and package_json.exists():
+            try:
+                # Vérifier quelques packages clés
+                key_packages = ['react', 'vite', 'typescript']
+                missing_packages = []
+                
+                for pkg in key_packages:
+                    pkg_dir = node_modules / pkg
+                    if not pkg_dir.exists():
+                        missing_packages.append(pkg)
+                
+                if not missing_packages:
+                    status['frontend'] = True
+                    self.print_colored("✅ Dépendances frontend déjà installées", Colors.OKGREEN)
+                else:
+                    self.print_colored(f"⚠️  Packages manquants: {', '.join(missing_packages)}", Colors.WARNING)
+            except:
+                self.print_colored("⚠️  Erreur lors de la vérification frontend", Colors.WARNING)
+        else:
+            self.print_colored("❌ node_modules non trouvé", Colors.FAIL)
+        
+        # Vérifier les dépendances Python pour chaque service
         for service_name, config in self.services.items():
             if service_name == "Frontend":
                 continue
@@ -187,15 +231,72 @@ class ProjectLauncher:
             requirements_file = service_path / config["requirements"]
             
             if requirements_file.exists():
+                # Vérifier si Django est installé (package principal)
+                try:
+                    result = subprocess.run(
+                        [sys.executable, "-c", "import django; print(django.get_version())"],
+                        capture_output=True,
+                        text=True,
+                        cwd=service_path
+                    )
+                    if result.returncode == 0:
+                        status['services'][service_name] = True
+                        self.print_colored(f"✅ {service_name} - Dépendances OK", Colors.OKGREEN)
+                    else:
+                        status['services'][service_name] = False
+                        self.print_colored(f"❌ {service_name} - Django manquant", Colors.FAIL)
+                except:
+                    status['services'][service_name] = False
+                    self.print_colored(f"❌ {service_name} - Vérification échouée", Colors.FAIL)
+            else:
+                status['services'][service_name] = False
+                self.print_colored(f"⚠️  {service_name} - requirements.txt manquant", Colors.WARNING)
+        
+        return status
+
+    def install_dependencies_smart(self) -> bool:
+        """Installe seulement les dépendances manquantes"""
+        dependency_status = self.check_dependencies_installed()
+        
+        # Installer les dépendances frontend si nécessaire
+        if not dependency_status['frontend']:
+            self.print_header("Installation des dépendances frontend")
+            self.print_colored("📦 Installation des dépendances npm...", Colors.OKBLUE)
+            
+            npm_commands = ["npm install", "npm.cmd install"]
+            frontend_success = False
+            
+            for npm_cmd in npm_commands:
+                if self.run_command(npm_cmd, cwd=self.root_dir, shell=True):
+                    self.print_colored("✅ Dépendances frontend installées", Colors.OKGREEN)
+                    frontend_success = True
+                    break
+            
+            if not frontend_success:
+                self.print_colored("❌ Échec de l'installation des dépendances frontend", Colors.FAIL)
+        else:
+            self.print_colored("⏭️  Dépendances frontend déjà installées, passage...", Colors.OKCYAN)
+            frontend_success = True
+        
+        # Installer les dépendances Python pour les services qui en ont besoin
+        services_to_install = [name for name, installed in dependency_status['services'].items() if not installed]
+        
+        if services_to_install:
+            self.print_header("Installation des dépendances Python manquantes")
+            
+            for service_name in services_to_install:
+                config = self.services[service_name]
+                service_path = self.root_dir / config["path"]
+                
                 self.print_colored(f"📦 Installation des dépendances pour {service_name}...", Colors.OKBLUE)
                 if not self.run_command(f"{sys.executable} -m pip install -r {config['requirements']}", cwd=service_path):
                     self.print_colored(f"⚠️  Échec de l'installation pour {service_name}", Colors.WARNING)
                 else:
                     self.print_colored(f"✅ Dépendances installées pour {service_name}", Colors.OKGREEN)
-            else:
-                self.print_colored(f"⚠️  Fichier requirements.txt non trouvé pour {service_name}", Colors.WARNING)
-
-        return True
+        else:
+            self.print_colored("⏭️  Toutes les dépendances Python sont déjà installées", Colors.OKCYAN)
+        
+        return frontend_success
 
     def check_databases(self) -> bool:
         """Vérifie si les bases de données existent"""
@@ -245,15 +346,45 @@ class ProjectLauncher:
         self.print_colored(f"🚀 Démarrage de {service_name}...", Colors.OKBLUE)
         
         try:
-            process = subprocess.Popen(
-                config["cmd"],
-                cwd=service_path,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                text=True,
-                bufsize=1,
-                universal_newlines=True
-            )
+            # Gestion spéciale pour le frontend (npm)
+            if service_name == "Frontend":
+                # Essayer différentes commandes npm pour Windows
+                npm_commands = [
+                    ["npm", "run", "dev"],
+                    ["npm.cmd", "run", "dev"]
+                ]
+                
+                process = None
+                for cmd in npm_commands:
+                    try:
+                        process = subprocess.Popen(
+                            cmd,
+                            cwd=service_path,
+                            stdout=subprocess.PIPE,
+                            stderr=subprocess.PIPE,
+                            text=True,
+                            bufsize=1,
+                            universal_newlines=True,
+                            shell=True
+                        )
+                        break
+                    except:
+                        continue
+                
+                if process is None:
+                    self.print_colored(f"❌ Impossible de démarrer {service_name}", Colors.FAIL)
+                    return False
+            else:
+                # Services Django normaux
+                process = subprocess.Popen(
+                    config["cmd"],
+                    cwd=service_path,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    text=True,
+                    bufsize=1,
+                    universal_newlines=True
+                )
             
             self.processes[service_name] = process
             
@@ -400,7 +531,7 @@ class ProjectLauncher:
 {Colors.HEADER}{Colors.BOLD}
 ╔══════════════════════════════════════════════════════════════╗
 ║                     🛒 AMAGON PROJECT                        ║
-║                  Lanceur automatique v2.0                   ║
+║                  Lanceur automatique v2.1                   ║
 ╚══════════════════════════════════════════════════════════════╝
 {Colors.ENDC}""")
             
@@ -409,10 +540,9 @@ class ProjectLauncher:
                 self.print_colored("❌ Dépendances système manquantes", Colors.FAIL)
                 return False
             
-            # Installer les dépendances
-            if not self.install_dependencies():
-                self.print_colored("❌ Échec de l'installation des dépendances", Colors.FAIL)
-                return False
+            # Installer seulement les dépendances manquantes
+            if not self.install_dependencies_smart():
+                self.print_colored("⚠️  Certaines dépendances ont échoué, mais continuation...", Colors.WARNING)
             
             # Vérifier et configurer les bases de données
             if not self.check_databases():
