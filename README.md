@@ -9,12 +9,12 @@ This project follows a microservices architecture with:
 - **Frontend**: React with TypeScript, Tailwind CSS
 - **API Gateway**: Django REST Framework (Port 8000)
 - **Microservices**:
-  - Auth Service (Port 8001)
-  - Product Service (Port 8002)
-  - Order Service (Port 8003)
-  - Inventory Service (Port 8004)
-  - Seller Service (Port 8005)
-  - Store Service (Port 8006)
+  - Auth Service (Port 8001) - User authentication
+  - Product Service (Port 8002) - Product management
+  - Order Service (Port 8003) - Order processing
+  - Inventory Service (Port 8004) - Stock management
+  - Seller Service (Port 8005) - Seller dashboard
+  - Store Service (Port 8006) - Store management
 
 ## 🗄️ Database
 
@@ -35,114 +35,139 @@ All services use **SQLite** databases for simplicity and portability:
 - Node.js 16+
 - npm or yarn
 
-### Installation
+### 🎯 **Méthode Recommandée - Scripts Automatisés**
 
-1. **Clone the repository**
-   ```bash
-   git clone <repository-url>
-   cd amagon
-   ```
+Le projet inclut 3 scripts Python à la racine pour une installation et un lancement automatiques :
 
-2. **Install frontend dependencies**
-   ```bash
-   npm install
-   ```
+#### **1. Installation des dépendances (optionnel)**
+```bash
+python install_dependencies.py
+```
+- Installe automatiquement toutes les dépendances Python et npm
+- Vérifie les prérequis système
+- Gestion intelligente des erreurs
+- Compatible Windows/Mac/Linux
 
-3. **Install Python dependencies for all services**
-   ```bash
-   # API Gateway
-   cd api-gateway
-   pip install -r requirements.txt
-   cd ..
+#### **2. Configuration des bases de données**
+```bash
+python setup_databases.py
+```
+- Configure automatiquement toutes les bases de données SQLite
+- Crée les migrations Django
+- Initialise les données de base
+- Crée un superutilisateur (admin/admin123)
 
-   # Auth Service
-   cd microservices/auth-service
-   pip install -r requirements.txt
-   cd ../..
+#### **3. Lancement du projet complet**
+```bash
+python run_project.py
+```
+- Lance automatiquement tous les services
+- Gère les dépendances manquantes
+- Surveille et redémarre les services en cas d'erreur
+- Interface colorée avec statut en temps réel
 
-   # Product Service
-   cd microservices/product-service
-   pip install -r requirements.txt
-   cd ../..
+### 🎉 **Lancement en Une Commande**
 
-   # Order Service
-   cd microservices/order-service
-   pip install -r requirements.txt
-   cd ../..
+Pour une installation et un lancement complets :
 
-   # Inventory Service
-   cd microservices/inventory-service
-   pip install -r requirements.txt
-   cd ../..
+```bash
+# Installation complète (si première fois)
+python install_dependencies.py
 
-   # Seller Service
-   cd microservices/seller-service
-   pip install -r requirements.txt
-   cd ../..
+# Configuration des bases de données
+python setup_databases.py
 
-   # Store Service
-   cd microservices/store-service
-   pip install -r requirements.txt
-   cd ../..
-   ```
+# Lancement du projet
+python run_project.py
+```
 
-4. **Setup all databases**
-   ```bash
-   python setup_databases.py
-   ```
+Ou directement :
+```bash
+python run_project.py
+```
+*(Le script gère automatiquement les dépendances et la configuration)*
 
-5. **Start all services**
-   ```bash
-   node start.cjs
-   ```
+### 📱 **Accès aux Services**
 
-The application will be available at:
-- Frontend: http://localhost:5173
-- API Gateway: http://localhost:8000
+Une fois lancé, le projet sera accessible sur :
+- **Frontend React** : http://localhost:5173
+- **API Gateway** : http://localhost:8000
+- **Interface Admin** : http://localhost:8001/admin/
+  - Utilisateur : `admin`
+  - Mot de passe : `admin123`
+
+### 🛑 **Arrêt du Projet**
+
+Pour arrêter tous les services :
+- Appuyez sur `Ctrl+C` dans le terminal où `run_project.py` s'exécute
+- Tous les services seront arrêtés automatiquement
 
 ## 📁 Project Structure
 
 ```
 amagon/
+├── 📄 install_dependencies.py    # Installation automatique des dépendances
+├── 📄 setup_databases.py         # Configuration des bases de données
+├── 📄 run_project.py             # Lancement automatique du projet
 ├── src/                          # React frontend
 │   ├── components/              # Reusable components
 │   ├── pages/                   # Page components
 │   ├── context/                 # React contexts
 │   └── data/                    # Mock data
 ├── api-gateway/                 # API Gateway service
-├── microservices/               # Backend microservices
-│   ├── auth-service/           # Authentication
-│   ├── product-service/        # Product management
-│   ├── order-service/          # Order processing
-│   ├── inventory-service/      # Inventory management
-│   ├── seller-service/         # Seller management
-│   └── store-service/          # Store management
-├── setup_databases.py          # Database setup script
-└── start.cjs                   # Service orchestration
+└── microservices/               # Backend microservices
+    ├── auth-service/           # Authentication
+    ├── product-service/        # Product management
+    ├── order-service/          # Order processing
+    ├── inventory-service/      # Inventory management
+    ├── seller-service/         # Seller management
+    └── store-service/          # Store management
 ```
 
 ## 🔧 Development
 
-### Running Individual Services
+### **Scripts de Développement Avancés**
 
-You can run services individually for development:
+Les scripts Python offrent des fonctionnalités avancées :
+
+#### **🔍 Diagnostics Automatiques**
+- Vérification des prérequis système
+- Détection des dépendances manquantes
+- Validation des configurations
+- Rapports d'erreur détaillés
+
+#### **🔄 Gestion Intelligente**
+- Installation sélective des dépendances manquantes
+- Redémarrage automatique des services en cas d'erreur
+- Surveillance en temps réel
+- Nettoyage automatique à l'arrêt
+
+#### **🎨 Interface Utilisateur**
+- Affichage coloré avec codes couleur
+- Barres de progression
+- Statut en temps réel de chaque service
+- Messages d'aide contextuels
+
+### **Lancement Manuel (Développement)**
+
+Si vous préférez lancer les services individuellement :
 
 ```bash
-# Frontend only
+# Frontend seulement
 npm run dev
 
-# API Gateway only
+# API Gateway seulement
 cd api-gateway
 python manage.py runserver 8000
 
-# Specific microservice
+# Service spécifique
 cd microservices/auth-service
 python manage.py runserver 8001
 ```
 
-### Database Management
+### **Gestion des Bases de Données**
 
-To reset a specific database:
+Pour réinitialiser une base de données spécifique :
 ```bash
 cd <service-directory>
 rm *.sqlite3
@@ -150,7 +175,7 @@ python manage.py makemigrations
 python manage.py migrate
 ```
 
-To reset all databases:
+Pour réinitialiser toutes les bases de données :
 ```bash
 python setup_databases.py
 ```
@@ -162,7 +187,9 @@ python setup_databases.py
 - **Product Catalog**: Browse products by categories
 - **Shopping Cart**: Add/remove items, quantity management
 - **User Authentication**: Login/register functionality
+- **Seller Dashboard**: Complete seller management system
 - **Order Management**: Checkout process and order history
+- **Inventory System**: Multi-store stock management
 - **Microservices**: Scalable backend architecture
 - **SQLite**: Simple, file-based database system
 
@@ -186,21 +213,87 @@ python setup_databases.py
 
 The API Gateway routes requests to appropriate microservices:
 
-- `/api/auth/` → Auth Service
-- `/api/products/` → Product Service
-- `/api/orders/` → Order Service
-- `/api/inventory/` → Inventory Service
-- `/api/sellers/` → Seller Service
-- `/api/stores/` → Store Service
+- `/api/auth/` → Auth Service (Port 8001)
+- `/api/products/` → Product Service (Port 8002)
+- `/api/orders/` → Order Service (Port 8003)
+- `/api/inventory/` → Inventory Service (Port 8004)
+- `/api/sellers/` → Seller Service (Port 8005)
+- `/api/stores/` → Store Service (Port 8006)
+
+### **🔐 Authentication Endpoints**
+- `POST /api/auth/register/` - User registration
+- `POST /api/auth/login/` - User login
+- `GET /api/auth/profile/` - User profile
+- `POST /api/auth/verify-token/` - Token verification
+
+### **🏪 Seller Endpoints**
+- `POST /api/sellers/register/` - Seller registration
+- `POST /api/sellers/login/` - Seller login
+- `GET /api/sellers/dashboard/` - Seller dashboard
+- `GET/POST /api/sellers/products/` - Product management
+
+## 🚨 Troubleshooting
+
+### **Problèmes Courants**
+
+#### **Port déjà utilisé**
+```bash
+# Tuer les processus sur les ports utilisés
+python run_project.py
+# Le script gère automatiquement les conflits de ports
+```
+
+#### **Dépendances manquantes**
+```bash
+python install_dependencies.py
+# Réinstalle toutes les dépendances manquantes
+```
+
+#### **Base de données corrompue**
+```bash
+python setup_databases.py
+# Recrée toutes les bases de données
+```
+
+#### **Erreurs de permissions**
+- Sur Windows : Exécuter en tant qu'administrateur
+- Sur Mac/Linux : Utiliser `sudo` si nécessaire
+
+### **Logs et Debugging**
+
+Les scripts fournissent des logs détaillés :
+- ✅ Messages de succès en vert
+- ⚠️ Avertissements en jaune
+- ❌ Erreurs en rouge
+- 📋 Informations en bleu
 
 ## 🤝 Contributing
 
 1. Fork the repository
 2. Create a feature branch
 3. Make your changes
-4. Run tests
+4. Test with `python run_project.py`
 5. Submit a pull request
 
 ## 📄 License
 
 This project is for educational purposes only and is not affiliated with Amazon.
+
+---
+
+## 🎯 **Résumé des Commandes Essentielles**
+
+```bash
+# Installation complète (première fois)
+python install_dependencies.py
+
+# Configuration des bases de données
+python setup_databases.py
+
+# Lancement du projet
+python run_project.py
+
+# Arrêt : Ctrl+C
+```
+
+**Le projet sera accessible sur http://localhost:5173** 🚀
