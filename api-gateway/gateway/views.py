@@ -69,3 +69,14 @@ def store_proxy(request):
         data=request.body if request.body else None,
     )
     return JsonResponse(response.json(), status=response.status_code)
+
+@api_view(['GET', 'POST', 'PUT', 'DELETE'])
+def admin_proxy(request):
+    response = requests.request(
+        method=request.method,
+        url=f"{settings.MICROSERVICES['admin']}{request.path}",
+        headers={key: value for key, value in request.headers.items()
+                if key.lower() not in ['host']},
+        data=request.body if request.body else None,
+    )
+    return JsonResponse(response.json(), status=response.status_code)

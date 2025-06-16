@@ -60,6 +60,11 @@ class DatabaseSetup:
                 "path": "microservices/store-service",
                 "app_name": "store_app",
                 "db_file": "store_db.sqlite3"
+            },
+            "Admin Service": {
+                "path": "microservices/admin-service",
+                "app_name": "admin_app",
+                "db_file": "admin_db.sqlite3"
             }
         }
 
@@ -277,6 +282,58 @@ else:
         except Exception as e:
             self.print_colored(f"❌ Erreur lors de la création du superutilisateur: {e}", Colors.FAIL)
 
+    def create_admin_user(self):
+        """Crée un administrateur pour le service admin"""
+        self.print_header("Création d'un administrateur pour le service admin")
+        
+        admin_service_path = self.root_dir / "microservices/admin-service"
+        
+        if not admin_service_path.exists():
+            self.print_colored("⚠️  Service admin non trouvé", Colors.WARNING)
+            return
+        
+        self.print_colored("👤 Création d'un administrateur par défaut...", Colors.OKBLUE)
+        
+        # Créer un script Python pour créer l'administrateur
+        create_admin_script = """
+import os
+import django
+
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'admin_app.settings')
+django.setup()
+
+from admin_app.models import AdminUser
+
+if not AdminUser.objects.filter(username='admin').exists():
+    admin = AdminUser.objects.create_user(
+        username='admin',
+        email='admin@amagon.com',
+        password='admin123',
+        role='super_admin',
+        department='IT',
+        is_super_admin=True,
+        is_staff=True,
+        is_superuser=True
+    )
+    print('Administrateur créé: admin / admin123')
+else:
+    print('Administrateur existe déjà')
+"""
+        
+        script_file = admin_service_path / "create_admin.py"
+        try:
+            with open(script_file, 'w') as f:
+                f.write(create_admin_script)
+            
+            if self.run_command(f"{sys.executable} create_admin.py", cwd=admin_service_path):
+                self.print_colored("✅ Administrateur créé (admin / admin123)", Colors.OKGREEN)
+            
+            # Nettoyer le script temporaire
+            script_file.unlink()
+            
+        except Exception as e:
+            self.print_colored(f"❌ Erreur lors de la création de l'administrateur: {e}", Colors.FAIL)
+
     def setup_all_databases(self) -> bool:
         """Configure toutes les bases de données"""
         self.print_header("Configuration des bases de données SQLite")
@@ -320,6 +377,9 @@ else:
             
             # Créer un superutilisateur pour l'auth service
             self.create_superuser_for_auth_service()
+            
+            # Créer un administrateur pour le service admin
+            self.create_admin_user()
             
             self.print_colored(f"\n{Colors.OKGREEN}🎉 Configuration des bases de données terminée avec succès!{Colors.ENDC}")
             self.print_colored(f"{Colors.OKBLUE}Vous pouvez maintenant lancer le projet avec: python run_project.py{Colors.ENDC}")

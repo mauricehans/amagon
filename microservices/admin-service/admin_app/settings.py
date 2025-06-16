@@ -1,5 +1,5 @@
 """
-Django settings for gateway project.
+Django settings for admin_app project.
 """
 
 from pathlib import Path
@@ -7,7 +7,7 @@ import os
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = 'django-insecure-your-secret-key-here'
+SECRET_KEY = 'django-insecure-admin-service-key'
 
 DEBUG = True
 
@@ -22,7 +22,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'corsheaders',
-    'channels',
+    'admin_app',
 ]
 
 MIDDLEWARE = [
@@ -34,11 +34,9 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'gateway.middleware.auth.AuthMiddleware',
-    'gateway.middleware.routing.RoutingMiddleware',
 ]
 
-ROOT_URLCONF = 'gateway.urls'
+ROOT_URLCONF = 'admin_app.urls'
 
 TEMPLATES = [
     {
@@ -56,19 +54,12 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'gateway.wsgi.application'
-ASGI_APPLICATION = 'gateway.asgi.application'
-
-CHANNEL_LAYERS = {
-    'default': {
-        'BACKEND': 'channels.layers.InMemoryChannelLayer',
-    },
-}
+WSGI_APPLICATION = 'admin_app.wsgi.application'
 
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'gateway_db.sqlite3',
+        'NAME': BASE_DIR / 'admin_db.sqlite3',
     }
 }
 
@@ -98,21 +89,10 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
+    "http://localhost:8000",
 ]
 
-# Microservices URLs
-MICROSERVICES = {
-    'auth': 'http://localhost:8001',
-    'product': 'http://localhost:8002',
-    'inventory': 'http://localhost:8003',
-    'notification': 'http://localhost:8004',
-    'seller': 'http://localhost:8005',
-    'store': 'http://localhost:8006',
-    'order': 'http://localhost:8007',
-    'admin': 'http://localhost:8008',
-}
-
 # JWT Settings
-JWT_SECRET_KEY = 'your-jwt-secret-key'
+JWT_SECRET_KEY = 'admin-jwt-secret-key'
 JWT_ALGORITHM = 'HS256'
 JWT_EXPIRATION_DELTA = 24 * 60 * 60  # 24 hours in seconds

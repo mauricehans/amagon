@@ -14,6 +14,8 @@ import NotFoundPage from './pages/NotFoundPage';
 import SellerLoginPage from './pages/SellerLoginPage';
 import SellerRegisterPage from './pages/SellerRegisterPage';
 import SellerDashboardPage from './pages/SellerDashboardPage';
+import AdminLoginPage from './pages/AdminLoginPage';
+import AdminDashboardPage from './pages/AdminDashboardPage';
 import { CartProvider } from './context/CartContext';
 import { AuthProvider } from './context/AuthContext';
 
@@ -27,6 +29,10 @@ function App() {
             <Route path="/seller/login" element={<SellerLoginPage />} />
             <Route path="/seller/register" element={<SellerRegisterPage />} />
             <Route path="/seller/dashboard" element={<SellerDashboardPage />} />
+            
+            {/* Routes admin */}
+            <Route path="/admin/login" element={<AdminLoginPage />} />
+            <Route path="/admin/dashboard" element={<AdminDashboardPage />} />
             
             {/* Routes principales avec layout */}
             <Route path="/*" element={

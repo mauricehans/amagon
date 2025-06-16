@@ -91,6 +91,14 @@ class ProjectLauncher:
                 "requirements": "requirements.txt",
                 "health_check": "http://localhost:8006/admin/"
             },
+            "Admin Service": {
+                "path": "microservices/admin-service",
+                "port": 8007,
+                "cmd": [sys.executable, "manage.py", "runserver", "8007"],
+                "ready_message": "Starting development server at http://127.0.0.1:8007/",
+                "requirements": "requirements.txt",
+                "health_check": "http://localhost:8007/admin/"
+            },
             "Frontend": {
                 "path": ".",
                 "port": 5173,
@@ -310,6 +318,7 @@ class ProjectLauncher:
             "Inventory Service": "microservices/inventory-service/inventory_db.sqlite3",
             "Seller Service": "microservices/seller-service/seller_db.sqlite3",
             "Store Service": "microservices/store-service/store_db.sqlite3",
+            "Admin Service": "microservices/admin-service/admin_db.sqlite3",
         }
         
         missing_dbs = []
@@ -481,6 +490,7 @@ class ProjectLauncher:
         self.print_colored(f"   Frontend: http://localhost:5173", Colors.OKCYAN)
         self.print_colored(f"   API Gateway: http://localhost:8000", Colors.OKCYAN)
         self.print_colored(f"   Admin Auth: http://localhost:8001/admin/ (admin/admin123)", Colors.OKCYAN)
+        self.print_colored(f"   Admin Panel: http://localhost:8007/admin/ (admin/admin123)", Colors.OKCYAN)
 
     def show_project_info(self):
         """Affiche les informations du projet"""
@@ -491,12 +501,19 @@ class ProjectLauncher:
 • Frontend React: http://localhost:5173
 • API Gateway: http://localhost:8000
 • Interface Admin: http://localhost:8001/admin/
+• Panel Admin Support: http://localhost:8007/admin/
 • Compte admin: admin / admin123
 
 {Colors.OKBLUE}🗄️ Bases de données SQLite:{Colors.ENDC}
 • Toutes les données sont stockées localement
 • Pas besoin de PostgreSQL ou MySQL
 • Fichiers .sqlite3 dans chaque service
+
+{Colors.OKBLUE}🎯 Nouvelles fonctionnalités:{Colors.ENDC}
+• Service Admin avec système de support
+• Tickets de support pour utilisateurs et vendeurs
+• Dashboard admin complet
+• Gestion des demandes clients
 
 {Colors.WARNING}⚠️  Pour arrêter tous les services: Ctrl+C{Colors.ENDC}
 """)
@@ -531,7 +548,7 @@ class ProjectLauncher:
 {Colors.HEADER}{Colors.BOLD}
 ╔══════════════════════════════════════════════════════════════╗
 ║                     🛒 AMAGON PROJECT                        ║
-║                  Lanceur automatique v2.1                   ║
+║                  Lanceur automatique v2.2                   ║
 ╚══════════════════════════════════════════════════════════════╝
 {Colors.ENDC}""")
             
