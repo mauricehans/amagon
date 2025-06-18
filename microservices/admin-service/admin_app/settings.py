@@ -13,6 +13,8 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
+
+
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -62,6 +64,8 @@ DATABASES = {
         'NAME': BASE_DIR / 'admin_db.sqlite3',
     }
 }
+
+AUTH_USER_MODEL = 'admin_app.AdminUser'
 
 AUTH_PASSWORD_VALIDATORS = [
     {
