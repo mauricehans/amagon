@@ -2,17 +2,10 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Star } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
+import { Product } from '../../types';
 
 interface ProductCardProps {
-  product: {
-    id: string;
-    title: string;
-    price: number;
-    image: string;
-    rating: number;
-    reviewCount: number;
-    isPrime?: boolean;
-  };
+  product: Product;
 }
 
 const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
@@ -24,9 +17,9 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
     
     addItem({
       id: product.id,
-      title: product.title,
+      name: product.name,
       price: product.price,
-      image: product.image
+      image_url: product.image_url
     });
   };
 
@@ -36,8 +29,9 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   // Render rating stars
   const renderRating = () => {
     const stars = [];
+    const rating = product.rating || 0;
     for (let i = 1; i <= 5; i++) {
-      if (i <= product.rating) {
+      if (i <= rating) {
         stars.push(<Star key={i} size={16} className="fill-amazon-warning text-amazon-warning" />);
       } else {
         stars.push(<Star key={i} size={16} className="text-gray-300" />);
@@ -48,7 +42,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         <div className="flex mr-1">
           {stars}
         </div>
-        <span className="text-xs text-gray-500">({product.reviewCount})</span>
+        <span className="text-xs text-gray-500">({product.review_count || 0})</span>
       </div>
     );
   };
@@ -58,13 +52,13 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
       <Link to={`/product/${product.id}`} className="block">
         <div className="relative pb-[100%] mb-3 bg-white overflow-hidden">
           <img 
-            src={product.image} 
-            alt={product.title} 
+            src={product.image_url} 
+            alt={product.name} 
             className="absolute top-0 left-0 w-full h-full object-contain transition-transform group-hover:scale-105"
           />
         </div>
         
-        <h3 className="text-sm font-medium line-clamp-2 mb-1 min-h-[40px]">{product.title}</h3>
+        <h3 className="text-sm font-medium line-clamp-2 mb-1 min-h-[40px]">{product.name}</h3>
         
         {renderRating()}
         
@@ -74,12 +68,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           </span>
         </div>
         
-        {product.isPrime && (
-          <div className="mt-1 flex items-center">
-            <span className="text-xs px-1 bg-amazon-blue text-white font-bold rounded">Prime</span>
-            <span className="text-xs text-gray-500 ml-1">FREE Delivery</span>
-          </div>
-        )}
+        {/* product.isPrime property does not exist on the new Product type, you can add it if needed */}
         
         <button 
           onClick={handleAddToCart}

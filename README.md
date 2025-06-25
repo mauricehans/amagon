@@ -61,7 +61,7 @@ python setup_databases.py
 ```bash
 python run_project.py
 ```
-- Lance automatiquement tous les services
+- Lance automatiquement tous les services **backend (tous les microservices Python)** et le frontend React
 - Gère les dépendances manquantes
 - Surveille et redémarre les services en cas d'erreur
 - Interface colorée avec statut en temps réel
@@ -258,6 +258,56 @@ python setup_databases.py
 #### **Erreurs de permissions**
 - Sur Windows : Exécuter en tant qu'administrateur
 - Sur Mac/Linux : Utiliser `sudo` si nécessaire
+
+#### **Page 404 ou redirection vers Amazon lors du clic sur un produit**
+- Vérifiez que la route `/product/:id` (ou `/products/:id`) existe dans votre code React (`src/pages/ProductPage.tsx` ou similaire).
+- Dans `src/App.tsx` (ou le fichier de routes), assurez-vous d’avoir une ligne comme :
+  ```jsx
+  <Route path="/product/:id" element={<ProductPage />} />
+  ```
+- Vérifiez que vos liens utilisent `react-router-dom` :
+  ```jsx
+  <Link to={`/product/${product.id}`}>Voir le produit</Link>
+  ```
+- Si vous voyez une page Amazon, c’est probablement un lien externe ou une mauvaise gestion du fallback 404.
+- Vérifiez que le backend retourne bien les détails du produit pour l’ID demandé.
+
+#### **Checklist de vérification pour la page produit**
+1. **Route React pour la page produit**
+   - Ouvrez `src/App.tsx` (ou le fichier de routes principal).
+   - Vérifiez la présence de :
+     ```jsx
+     <Route path="/product/:id" element={<ProductPage />} />
+     ```
+   - Le composant `ProductPage` doit exister dans `src/pages/ProductPage.tsx` (ou similaire).
+
+2. **Lien vers la page produit**
+   - Dans la liste des produits (`src/components/ProductCard.tsx` ou équivalent), vérifiez que le lien utilise `react-router-dom` :
+     ```jsx
+     <Link to={`/product/${product.id}`}>Voir le produit</Link>
+     ```
+   - Il ne doit pas s’agir d’un lien externe (`<a href="...amazon.com...">`).
+
+3. **Fallback 404**
+   - Vérifiez que la route fallback (`*`) dans votre routeur affiche une page 404 personnalisée, pas une redirection externe :
+     ```jsx
+     <Route path="*" element={<NotFoundPage />} />
+     ```
+
+4. **Backend : Endpoint produit**
+   - L’API `/api/products/<id>/` doit retourner les détails du produit demandé.
+   - Testez avec :
+     ```bash
+     curl http://localhost:8002/api/products/1/
+     ```
+   - Vous devez recevoir un JSON avec les infos du produit, pas une erreur 404.
+
+5. **Console et logs**
+   - Ouvrez la console du navigateur et vérifiez l’absence d’erreurs lors du clic sur un produit.
+   - Vérifiez les logs du backend pour toute erreur lors de la requête produit.
+
+6. **Redémarrage**
+   - Après toute modification, redémarrez le frontend (`npm run dev`) et le backend concerné.
 
 ### **Logs et Debugging**
 
