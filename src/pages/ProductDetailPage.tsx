@@ -1,9 +1,30 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { Star, ChevronDown, ChevronUp, Check, Truck, ShieldCheck, Info } from 'lucide-react';
-import { mockProducts } from '../data/mockData';
+import { Star, ChevronDown, ChevronUp, Check, Truck, ShieldCheck, MapPin } from 'lucide-react';
 import { useCart } from '../context/CartContext';
-import ProductGrid from '../components/home/ProductGrid';
+import { Product } from '../components/types';
+
+const MOCK_PRODUCT: Product = {
+  id: 1,
+  name: "Mock Product",
+  description: "This is a mock product description.",
+  price: 19.99,
+  image_url: "https://images.pexels.com/photos/1294886/pexels-photo-1294886.jpeg?auto=compress&cs=tinysrgb&w=600",
+  rating: 4.5,
+  review_count: 42,
+  category_name: "Mock Category",
+  stock_quantity: 20,
+  images: [
+    { url: "https://images.pexels.com/photos/1294886/pexels-photo-1294886.jpeg?auto=compress&cs=tinysrgb&w=600", is_primary: true },
+    { url: "https://images.pexels.com/photos/1667088/pexels-photo-1667088.jpeg?auto=compress&cs=tinysrgb&w=600", is_primary: false },
+    { url: "https://images.pexels.com/photos/1707828/pexels-photo-1707828.jpeg?auto=compress&cs=tinysrgb&w=600", is_primary: false }
+  ],
+  sku: "MOCKSKU",
+  weight: 1.2,
+  dimensions: { length: 10, width: 5, height: 2 },
+  is_active: true,
+  created_at: new Date().toISOString()
+};
 
 const ProductDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -11,10 +32,57 @@ const ProductDetailPage: React.FC = () => {
   const [quantity, setQuantity] = useState(1);
   const [selectedImage, setSelectedImage] = useState(0);
   const [expandedSection, setExpandedSection] = useState<string | null>('description');
+  const [product, setProduct] = useState<Product | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   
-  // Find the product by ID
-  const product = mockProducts.find(p => p.id === id);
+  useEffect(() => {
+    const fetchProduct = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch(`http://localhost:8004/api/products/${id}/`);
+        if (!response.ok) {
+          // Use mock product if not found
+          setProduct(MOCK_PRODUCT);
+          setError(null);
+          return;
+        }
+        const data = await response.json();
+        setProduct(data);
+      } catch (err) {
+        // Use mock product on error
+        setProduct(MOCK_PRODUCT);
+        setError(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (id) {
+      fetchProduct();
+    }
+  }, [id]);
+
+  if (loading) {
+    return (
+      <div className="container-custom py-12 text-center">
+        <h1 className="text-2xl font-bold">Loading...</h1>
+      </div>
+    );
+  }
   
+  if (error) {
+    return (
+      <div className="container-custom py-12 text-center">
+        <h1 className="text-2xl font-bold mb-4">Error</h1>
+        <p className="mb-6">{error}</p>
+        <Link to="/" className="btn btn-primary">
+          Return to Home
+        </Link>
+      </div>
+    );
+  }
+
   if (!product) {
     return (
       <div className="container-custom py-12 text-center">
@@ -28,11 +96,12 @@ const ProductDetailPage: React.FC = () => {
   }
 
   const handleAddToCart = () => {
+    if (!product) return;
     addItem({
       id: product.id,
-      title: product.title,
+      name: product.name,
       price: product.price,
-      image: product.image
+      image_url: product.image_url
     });
   };
 
@@ -44,12 +113,14 @@ const ProductDetailPage: React.FC = () => {
     }
   };
 
-  // Mock data for product images
-  const productImages = [
-    product.image,
-    'https://images.pexels.com/photos/1294886/pexels-photo-1294886.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
-    'https://images.pexels.com/photos/1667088/pexels-photo-1667088.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
-  ];
+  // Replace productImages with product.images if available
+  const productImages = product?.images?.length
+    ? product.images.map(img => img.url)
+    : [
+        product?.image_url,
+        'https://images.pexels.com/photos/1294886/pexels-photo-1294886.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
+        'https://images.pexels.com/photos/1667088/pexels-photo-1667088.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
+      ];
 
   // Render rating stars
   const renderRating = () => {
@@ -67,7 +138,7 @@ const ProductDetailPage: React.FC = () => {
           {stars}
         </div>
         <a href="#reviews" className="text-amazon-teal hover:underline">
-          {product.reviewCount} ratings
+          {product.review_count} ratings
         </a>
       </div>
     );
@@ -82,7 +153,7 @@ const ProductDetailPage: React.FC = () => {
           <span className="mx-2">/</span>
           <Link to="/category/electronics" className="text-amazon-teal hover:underline">Electronics</Link>
           <span className="mx-2">/</span>
-          <span className="text-gray-500 truncate">{product.title}</span>
+          <span className="text-gray-500 truncate">{product.name}</span>
         </nav>
 
         {/* Product Details */}
@@ -101,7 +172,7 @@ const ProductDetailPage: React.FC = () => {
                     >
                       <img 
                         src={img} 
-                        alt={`${product.title} - view ${index + 1}`} 
+                        alt={`${product.name} - view ${index + 1}`} 
                         className="w-full h-full object-contain"
                       />
                     </div>
@@ -112,7 +183,7 @@ const ProductDetailPage: React.FC = () => {
                 <div className="flex-1 border border-gray-200 rounded">
                   <img 
                     src={productImages[selectedImage]} 
-                    alt={product.title}
+                    alt={product.name}
                     className="w-full h-auto object-contain"
                   />
                 </div>
@@ -133,7 +204,7 @@ const ProductDetailPage: React.FC = () => {
 
           {/* Product Info */}
           <div className="col-span-1">
-            <h1 className="text-xl md:text-2xl font-medium mb-2">{product.title}</h1>
+            <h1 className="text-xl md:text-2xl font-medium mb-2">{product.name}</h1>
             
             <div className="mb-4">
               {renderRating()}
@@ -252,28 +323,28 @@ const ProductDetailPage: React.FC = () => {
               
               <button 
                 onClick={handleAddToCart}
-                className="w-full py-2 mb-2 rounded bg-amazon-yellow hover:bg-amazon-yellow-hover"
+                className="btn btn-primary w-full mb-2"
               >
                 Add to Cart
               </button>
               
-              <button className="w-full py-2 mb-4 rounded bg-amazon-orange text-white hover:bg-amazon-orange-hover">
+              <button className="btn btn-secondary w-full">
                 Buy Now
               </button>
               
-              <div className="text-sm">
-                <div className="flex items-center mb-2">
+              <hr className="my-4"/>
+
+              <div className="text-sm space-y-3">
+                <div className="flex items-center">
                   <Check size={16} className="text-amazon-success mr-2" />
                   <span>Secure transaction</span>
                 </div>
-                
-                <div className="flex items-center mb-2">
-                  <Truck size={16} className="mr-2" />
-                  <span>Ships from and sold by Amazon.com</span>
+                <div className="flex items-center">
+                  <Truck size={16} className="text-gray-600 mr-2" />
+                  <span>Ships from Amazon</span>
                 </div>
-                
-                <div className="flex items-center mb-2">
-                  <ShieldCheck size={16} className="mr-2" />
+                <div className="flex items-center">
+                  <ShieldCheck size={16} className="text-gray-600 mr-2" />
                   <span>Return policy: Eligible for Return, Refund or Replacement</span>
                 </div>
               </div>
@@ -298,7 +369,7 @@ const ProductDetailPage: React.FC = () => {
                 ))}
               </div>
               
-              <div className="text-sm text-gray-600 mb-4">{product.reviewCount} global ratings</div>
+              <div className="text-sm text-gray-600 mb-4">{product.review_count} global ratings</div>
               
               <div className="space-y-2">
                 {[5, 4, 3, 2, 1].map((star) => (
@@ -361,7 +432,27 @@ const ProductDetailPage: React.FC = () => {
         {/* Similar products */}
         <div className="my-8">
           <h2 className="text-xl font-bold mb-4">Products related to this item</h2>
-          <ProductGrid limit={6} />
+        </div>
+
+        {/* Product Details Section */}
+        <div className="mt-12" id="reviews">
+          <div className="border-t border-b border-gray-200">
+            <h2 className="text-xl font-bold py-4">Product information</h2>
+          </div>
+          <div className="grid grid-cols-2 gap-4 mt-4">
+            <div className="font-medium">Description</div>
+            <div>{product.description}</div>
+            
+            <div className="font-medium">Category</div>
+            <div>{product.category_name}</div>
+
+            <div className="font-medium">Stock</div>
+            <div>{product.stock_quantity}</div>
+          </div>
+        </div>
+
+        <div className="mt-16">
+          <h2 className="text-xl font-bold mb-4">Customers also viewed</h2>
         </div>
       </div>
     </div>

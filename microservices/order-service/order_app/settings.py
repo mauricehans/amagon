@@ -7,11 +7,11 @@ import os
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = 'django-insecure-order-service-key'
+SECRET_KEY = 'django-insecure-order-service-key'  # Ne pas utiliser en production
 
-DEBUG = True
+DEBUG = True  # Mettre à False en production
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['localhost', '127.0.0.1']  # Ajout pour éviter les erreurs de host
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -81,6 +81,9 @@ TIME_ZONE = 'UTC'
 USE_I18N = True
 USE_TZ = True
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'  # Correction pour cohérence Django
+
+# Optionnel : à ajouter si vous avez des fichiers statiques personnalisés
+# STATICFILES_DIRS = [BASE_DIR / "static"]
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
