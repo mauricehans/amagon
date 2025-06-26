@@ -52,7 +52,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
       <Link to={`/product/${product.id}`} className="block">
         <div className="relative pb-[100%] mb-3 bg-white overflow-hidden">
           <img 
-            src={product.image_url} 
+            src={product.image_url || "https://via.placeholder.com/300x300?text=No+Image"} 
             alt={product.name} 
             className="absolute top-0 left-0 w-full h-full object-contain transition-transform group-hover:scale-105"
           />
@@ -67,8 +67,6 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             ${formattedPrice}
           </span>
         </div>
-        
-        {/* product.isPrime property does not exist on the new Product type, you can add it if needed */}
         
         <button 
           onClick={handleAddToCart}

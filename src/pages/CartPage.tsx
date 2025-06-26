@@ -51,15 +51,15 @@ const CartPage: React.FC = () => {
                   <div key={item.id} className="py-4 flex">
                     <div className="w-20 h-20 flex-shrink-0">
                       <img 
-                        src={item.image} 
-                        alt={item.title} 
+                        src={item.image_url || item.image || "https://via.placeholder.com/300x300?text=No+Image"} 
+                        alt={item.name || item.title || "Product"} 
                         className="w-full h-full object-contain"
                       />
                     </div>
                     
                     <div className="ml-4 flex-grow">
                       <Link to={`/product/${item.id}`} className="font-medium hover:text-amazon-teal">
-                        {item.title}
+                        {item.name || item.title}
                       </Link>
                       
                       <div className="text-amazon-success text-sm mt-1">In Stock</div>

@@ -77,9 +77,13 @@ const ProductGrid: React.FC<ProductGridProps> = ({
       </div>
       
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-        {displayProducts.map(product => (
-          <ProductCard key={product.id} product={product} />
-        ))}
+        {displayProducts.length === 0 ? (
+          <div className="col-span-full text-center text-gray-500">No products found.</div>
+        ) : (
+          displayProducts.map(product => (
+            <ProductCard key={product.id} product={product} />
+          ))
+        )}
       </div>
     </section>
   );

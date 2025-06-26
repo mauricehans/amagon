@@ -13,6 +13,8 @@ def product_list(request):
     if request.method == 'GET':
         products = Product.objects.filter(is_active=True)
         print("DEBUG: Number of active products:", products.count())  # Debug log
+        if products.count() == 0:
+            print("WARNING: No products found in the database.")
         product_data = []
         
         for product in products:
