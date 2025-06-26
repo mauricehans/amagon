@@ -4,8 +4,8 @@ import { CartItem } from '../components/types';
 interface CartContextType {
   items: CartItem[];
   addItem: (item: Omit<CartItem, 'quantity'>) => void;
-  removeItem: (id: string) => void;
-  updateQuantity: (id: string, quantity: number) => void;
+  removeItem: (id: string | number) => void;
+  updateQuantity: (id: string | number, quantity: number) => void;
   clearCart: () => void;
   itemCount: number;
   total: number;
@@ -25,11 +25,11 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const addItem = (product: Omit<CartItem, 'quantity'>) => {
     setItems(prevItems => {
-      const existingItem = prevItems.find(item => item.id === product.id);
+      const existingItem = prevItems.find(item => item.id == product.id);
       
       if (existingItem) {
         return prevItems.map(item => 
-          item.id === product.id 
+          item.id == product.id 
             ? { ...item, quantity: item.quantity + 1 } 
             : item
         );
@@ -39,11 +39,11 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
   };
 
-  const removeItem = (id: string) => {
-    setItems(prevItems => prevItems.filter(item => item.id !== id));
+  const removeItem = (id: string | number) => {
+    setItems(prevItems => prevItems.filter(item => item.id != id));
   };
 
-  const updateQuantity = (id: string, quantity: number) => {
+  const updateQuantity = (id: string | number, quantity: number) => {
     if (quantity <= 0) {
       removeItem(id);
       return;
@@ -51,7 +51,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     setItems(prevItems => 
       prevItems.map(item => 
-        item.id === id ? { ...item, quantity } : item
+        item.id == id ? { ...item, quantity } : item
       )
     );
   };

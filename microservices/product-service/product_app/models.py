@@ -13,7 +13,7 @@ class Category(models.Model):
         db_table = 'categories'
 
 class Product(models.Model):
-    id = models.AutoField(primary_key=True)  # Ensures incremental integer IDs
+    id = models.AutoField(primary_key=True)  # Identifiants incrémentaux
     name = models.CharField(max_length=255)
     description = models.TextField()
     category = models.ForeignKey(Category, on_delete=models.CASCADE)
@@ -23,7 +23,7 @@ class Product(models.Model):
     unit = models.CharField(max_length=50)  # pièce, kg, litre, etc.
     barcode = models.CharField(max_length=100, null=True, blank=True)
     weight = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
-    dimensions = models.JSONField(null=True, blank=True)  # {length, width, height}
+    dimensions = models.JSONField(null=True, blank=True)  # {longueur, largeur, hauteur}
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
