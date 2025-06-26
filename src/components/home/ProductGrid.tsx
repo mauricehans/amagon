@@ -9,26 +9,6 @@ interface ProductGridProps {
   limit?: number;
 }
 
-const MOCK_PRODUCTS: Product[] = Array.from({ length: 10 }).map((_, i) => ({
-  id: i + 1,
-  name: `Mock Product ${i + 1}`,
-  description: 'This is a mock product for display.',
-  price: 9.99 + i,
-  image_url: `https://picsum.photos/seed/mock${i + 1}/300/300`,
-  rating: 4 + (i % 2) * 0.5,
-  review_count: 10 + i,
-  category_name: 'Mock Category',
-  stock_quantity: 10 + i,
-  images: [
-    { url: `https://picsum.photos/seed/mock${i + 1}/300/300`, is_primary: true }
-  ],
-  sku: `MOCKSKU${i + 1}`,
-  weight: 1.0 + i * 0.1,
-  dimensions: { length: 10, width: 5, height: 2 },
-  is_active: true,
-  created_at: new Date().toISOString()
-}));
-
 const ProductGrid: React.FC<ProductGridProps> = ({ 
   title, 
   viewAllLink, 
@@ -42,17 +22,18 @@ const ProductGrid: React.FC<ProductGridProps> = ({
     const fetchProducts = async () => {
       try {
         setLoading(true);
+        setError(null);
         const response = await fetch('http://localhost:8004/api/products/');
         if (!response.ok) {
-          setProducts(MOCK_PRODUCTS);
-          setError(null);
+          setError('Failed to fetch products.');
+          setProducts([]);
           return;
         }
         const data = await response.json();
-        setProducts(data.length ? data : MOCK_PRODUCTS);
+        setProducts(data);
       } catch (err) {
-        setProducts(MOCK_PRODUCTS);
-        setError(null);
+        setError('Failed to fetch products.');
+        setProducts([]);
       } finally {
         setLoading(false);
       }

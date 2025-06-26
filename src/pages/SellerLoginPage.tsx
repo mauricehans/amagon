@@ -12,16 +12,18 @@ const SellerLoginPage: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
+    if (isLoading) return; // Empêche double soumission
+
     if (!email || !password) {
       setError('Veuillez remplir tous les champs');
       return;
     }
-    
+
     try {
       setIsLoading(true);
       setError(null);
-      
+
       const response = await fetch('http://localhost:8005/api/sellers/login/', {
         method: 'POST',
         headers: {
@@ -29,19 +31,29 @@ const SellerLoginPage: React.FC = () => {
         },
         body: JSON.stringify({ email, password }),
       });
-      
-      const data = await response.json();
-      
-      if (response.ok) {
+
+      let data: any = null;
+      try {
+        data = await response.json();
+      } catch (jsonErr) {
+        setError("Erreur de connexion au serveur (réponse invalide). Vérifiez que le serveur est bien démarré et que CORS est activé.");
+        setIsLoading(false);
+        return;
+      }
+
+      if (response.ok && data && data.token && data.seller) {
         // Stocker le token et les infos vendeur
         localStorage.setItem('sellerToken', data.token);
         localStorage.setItem('sellerData', JSON.stringify(data.seller));
         navigate('/seller/dashboard');
       } else {
-        setError(data.error || 'Identifiants invalides');
+        setError(
+          (data && typeof data.error === 'string' && data.error) ||
+          'Identifiants invalides ou réponse inattendue du serveur.'
+        );
       }
     } catch (err) {
-      setError('Erreur de connexion au serveur');
+      setError('Erreur de connexion au serveur. Vérifiez que le backend accepte les requêtes depuis le frontend (CORS).');
     } finally {
       setIsLoading(false);
     }
@@ -65,7 +77,7 @@ const SellerLoginPage: React.FC = () => {
 
         {/* Form */}
         <div className="bg-white rounded-lg shadow-xl p-8">
-          {error && (
+          {error && typeof error === 'string' && (
             <div className="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md">
               {error}
             </div>
