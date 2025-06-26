@@ -23,7 +23,7 @@ function App() {
   return (
     <AuthProvider>
       <CartProvider>
-        <Router>
+        <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
           <Routes>
             {/* Routes vendeur */}
             <Route path="/seller/login" element={<SellerLoginPage />} />

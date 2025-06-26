@@ -4,28 +4,6 @@ import { Star, ChevronDown, ChevronUp, Check, Truck, ShieldCheck, MapPin } from 
 import { useCart } from '../context/CartContext';
 import { Product } from '../components/types';
 
-const MOCK_PRODUCT: Product = {
-  id: 1,
-  name: "Mock Product",
-  description: "This is a mock product description.",
-  price: 19.99,
-  image_url: "https://images.pexels.com/photos/1294886/pexels-photo-1294886.jpeg?auto=compress&cs=tinysrgb&w=600",
-  rating: 4.5,
-  review_count: 42,
-  category_name: "Mock Category",
-  stock_quantity: 20,
-  images: [
-    { url: "https://images.pexels.com/photos/1294886/pexels-photo-1294886.jpeg?auto=compress&cs=tinysrgb&w=600", is_primary: true },
-    { url: "https://images.pexels.com/photos/1667088/pexels-photo-1667088.jpeg?auto=compress&cs=tinysrgb&w=600", is_primary: false },
-    { url: "https://images.pexels.com/photos/1707828/pexels-photo-1707828.jpeg?auto=compress&cs=tinysrgb&w=600", is_primary: false }
-  ],
-  sku: "MOCKSKU",
-  weight: 1.2,
-  dimensions: { length: 10, width: 5, height: 2 },
-  is_active: true,
-  created_at: new Date().toISOString()
-};
-
 const ProductDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const { addItem } = useCart();
@@ -40,19 +18,18 @@ const ProductDetailPage: React.FC = () => {
     const fetchProduct = async () => {
       try {
         setLoading(true);
+        setError(null);
         const response = await fetch(`http://localhost:8004/api/products/${id}/`);
         if (!response.ok) {
-          // Use mock product if not found
-          setProduct(MOCK_PRODUCT);
-          setError(null);
+          setProduct(null);
+          setError('Product not found.');
           return;
         }
         const data = await response.json();
         setProduct(data);
       } catch (err) {
-        // Use mock product on error
-        setProduct(MOCK_PRODUCT);
-        setError(null);
+        setProduct(null);
+        setError('Failed to fetch product.');
       } finally {
         setLoading(false);
       }
