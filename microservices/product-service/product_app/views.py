@@ -18,7 +18,7 @@ def product_list(request):
         product_data = []
         
         for product in products:
-            images = ProductImage.objects.filter(product=product)
+            images = product.images.all()  # Utilise la relation Django
             primary_image = images.filter(is_primary=True).first() or images.first()
             product_data.append({
                 'id': product.id,
@@ -77,7 +77,7 @@ def product_detail(request, product_id):
     product = get_object_or_404(Product, id=product_id)
     
     if request.method == 'GET':
-        images = ProductImage.objects.filter(product=product)
+        images = product.images.all()  # Utilise la relation Django
         primary_image = images.filter(is_primary=True).first() or images.first()
         return Response({
             'id': product.id,

@@ -19,17 +19,18 @@ def run():
     products = [
         {
             "name": "Smartphone X100",
-            "description": "Un smartphone performant avec écran OLED.",
+            "description": "Smartphone tres tactile et facile a utiliser ",
             "sku": "X100-001",
-            "price": 499.99,
-            "cost": 350.00,
+            "price": 18,
+            "cost": 45,
             "unit": "pièce",
             "barcode": "1234567890123",
             "weight": 0.18,
             "dimensions": {"longueur": 15, "largeur": 7, "hauteur": 0.8},
             "is_active": True,
             "images": [
-                {"url": "https://via.placeholder.com/300x300?text=Smartphone", "is_primary": True}
+               
+                {"url": "https://m.media-amazon.com/images/I/71NKGnsIkvL.jpg", "is_primary": True}
             ]
         },
         {
@@ -44,7 +45,7 @@ def run():
             "dimensions": {"longueur": 18, "largeur": 15, "hauteur": 7},
             "is_active": True,
             "images": [
-                {"url": "https://via.placeholder.com/300x300?text=Casque", "is_primary": True}
+                {"url": "https://resize-europe1.lanmedia.fr/img/var/europe1/storage/images/media/images/02_beats-studio3/58239346-1-fre-FR/02_Beats-Studio3.jpg", "is_primary": True}
             ]
         },
         {
@@ -59,7 +60,7 @@ def run():
             "dimensions": {"longueur": 4, "largeur": 4, "hauteur": 1},
             "is_active": True,
             "images": [
-                {"url": "https://via.placeholder.com/300x300?text=Montre", "is_primary": True}
+                {"url": "https://m.media-amazon.com/images/I/617psPDxTLL._AC_SX679_.jpg", "is_primary": True}
             ]
         },
         {
@@ -74,7 +75,7 @@ def run():
             "dimensions": {"longueur": 32, "largeur": 22, "hauteur": 1.8},
             "is_active": True,
             "images": [
-                {"url": "https://via.placeholder.com/300x300?text=Laptop", "is_primary": True}
+                {"url": "https://www.cdiscount.com/pdt2/7/f/r/1/700x700/82xj0047fr/rw/pc-portable-chromebook-lenovo-ideapad-slim-3-14m86.jpg", "is_primary": True}
             ]
         },
         {
@@ -89,7 +90,7 @@ def run():
             "dimensions": {"longueur": 16, "largeur": 7, "hauteur": 7},
             "is_active": True,
             "images": [
-                {"url": "https://via.placeholder.com/300x300?text=Enceinte", "is_primary": True}
+                {"url": "https://mmkdo.fr/11356-large_default/enceinte-led-bluetooth-15-w.jpg", "is_primary": True}
             ]
         },
         {
@@ -104,7 +105,7 @@ def run():
             "dimensions": {"longueur": 24, "largeur": 16, "hauteur": 0.9},
             "is_active": True,
             "images": [
-                {"url": "https://via.placeholder.com/300x300?text=Tablette", "is_primary": True}
+                {"url": "https://image.darty.com/darty?type=image&source=/market/2023/06/05/22062658_3723_1.jpg&width=497&height=330&quality=95&effects=Pad(CC,FFFFFF)", "is_primary": True}
             ]
         },
         {
@@ -119,7 +120,7 @@ def run():
             "dimensions": {"longueur": 6, "largeur": 4, "hauteur": 2.5},
             "is_active": True,
             "images": [
-                {"url": "https://via.placeholder.com/300x300?text=Chargeur", "is_primary": True}
+                {"url": "https://www.cdiscount.com/pdt2/0/6/9/1/700x700/efc3665329311069/rw/pack-chargeur-rapide-25w-blanc-type-c-cable-type.jpg", "is_primary": True}
             ]
         },
         {
@@ -134,7 +135,7 @@ def run():
             "dimensions": {"longueur": 11, "largeur": 6, "hauteur": 3.5},
             "is_active": True,
             "images": [
-                {"url": "https://via.placeholder.com/300x300?text=Souris", "is_primary": True}
+                {"url": "https://m.media-amazon.com/images/I/51YZVx82mlL._AC_SX679_.jpg", "is_primary": True}
             ]
         },
         {
@@ -149,7 +150,7 @@ def run():
             "dimensions": {"longueur": 44, "largeur": 13, "hauteur": 3.5},
             "is_active": True,
             "images": [
-                {"url": "https://via.placeholder.com/300x300?text=Clavier", "is_primary": True}
+                {"url": "https://media.ldlc.com/r705/ld/products/00/05/96/67/LD0005966749.jpg", "is_primary": True}
             ]
         },
         {
@@ -164,7 +165,7 @@ def run():
             "dimensions": {"longueur": 8, "largeur": 3, "hauteur": 3},
             "is_active": True,
             "images": [
-                {"url": "https://via.placeholder.com/300x300?text=Webcam", "is_primary": True}
+                {"url": "https://img-1.kwcdn.com/product/fancy/c08b3b4d-dc92-4d0e-932e-803b9ff76429.jpg?imageView2/2/w/264/q/70/format/webp", "is_primary": True}
             ]
         },
         {
@@ -179,7 +180,7 @@ def run():
             "dimensions": {"longueur": 10, "largeur": 7, "hauteur": 0.7},
             "is_active": True,
             "images": [
-                {"url": "https://via.placeholder.com/300x300?text=SSD", "is_primary": True}
+                {"url": "https://m.media-amazon.com/images/I/51Yif3RXFVL._AC_SL1080_.jpg", "is_primary": True}
             ]
         },
         {
@@ -194,7 +195,7 @@ def run():
             "dimensions": {"longueur": 1.5, "largeur": 1.1, "hauteur": 0.1},
             "is_active": True,
             "images": [
-                {"url": "https://via.placeholder.com/300x300?text=SD+Card", "is_primary": True}
+                {"url": "https://www.prophot.com/455239-superlarge_default/sandisk-carte-memoire-sdxc-uhs-i-extreme-pro-128gb-170mo-s-c10-u3-v30.jpg", "is_primary": True}
             ]
         },
         {
@@ -209,7 +210,7 @@ def run():
             "dimensions": {"longueur": 8, "largeur": 2, "hauteur": 2},
             "is_active": True,
             "images": [
-                {"url": "https://via.placeholder.com/300x300?text=Ecouteurs", "is_primary": True}
+                {"url": "https://static.fnac-static.com/multimedia/Images/F9/8F/48/10/17074425-3-1520-2/tsp20250409112252/Ecouteurs-intra-auriculaire-Sony-WF-C500-Bluetooth-Noir.jpg", "is_primary": True}
             ]
         },
         {
@@ -224,7 +225,7 @@ def run():
             "dimensions": {"longueur": 14, "largeur": 7, "hauteur": 1.5},
             "is_active": True,
             "images": [
-                {"url": "https://via.placeholder.com/300x300?text=Powerbank", "is_primary": True}
+                {"url": "https://zenkaa.fr/16056-large_default/batterie-externe-noire-10000-mah-powerhub10-black-de-vortex.jpg", "is_primary": True}
             ]
         },
         {
@@ -239,7 +240,7 @@ def run():
             "dimensions": {"longueur": 18, "largeur": 13, "hauteur": 6},
             "is_active": True,
             "images": [
-                {"url": "https://via.placeholder.com/300x300?text=Projecteur", "is_primary": True}
+                {"url": "https://bati-solution.fr/1180-large_default/theard-projecteur-led-portable-rechargeable-20w.jpg", "is_primary": True}
             ]
         },
         {
@@ -254,7 +255,7 @@ def run():
             "dimensions": {"longueur": 7, "largeur": 7, "hauteur": 10},
             "is_active": True,
             "images": [
-                {"url": "https://via.placeholder.com/300x300?text=Camera", "is_primary": True}
+                {"url": "https://www.video-surveillance-direct.com/1088-large_default/camera-ip-wifi-antivandale-dvr-sans-fil.jpg", "is_primary": True}
             ]
         },
         {
@@ -269,7 +270,7 @@ def run():
             "dimensions": {"longueur": 20, "largeur": 13, "hauteur": 3},
             "is_active": True,
             "images": [
-                {"url": "https://via.placeholder.com/300x300?text=Routeur", "is_primary": True}
+                {"url": "https://www.busiboutique.com/medias/boutique/319566/586eaf12-0738-4981-9628-87e2525c8024.jpg", "is_primary": True}
             ]
         },
         {
@@ -284,7 +285,7 @@ def run():
             "dimensions": {"longueur": 12, "largeur": 12, "hauteur": 18},
             "is_active": True,
             "images": [
-                {"url": "https://via.placeholder.com/300x300?text=Lampe", "is_primary": True}
+                {"url": "https://www.silamp.fr/cdn/shop/products/SY-A60S-WF-RGBCW-9W-zoom.jpg?v=1691765887", "is_primary": True}
             ]
         },
         {
@@ -299,7 +300,7 @@ def run():
             "dimensions": {"longueur": 34, "largeur": 34, "hauteur": 9},
             "is_active": True,
             "images": [
-                {"url": "https://via.placeholder.com/300x300?text=Robot", "is_primary": True}
+                {"url": "https://media.carrefour.fr/medias/e1ed996468004f30aca4b828e7b678b7/p_1500x1500/5060944996666_0.jpg", "is_primary": True}
             ]
         },
         {
@@ -314,7 +315,7 @@ def run():
             "dimensions": {"longueur": 42, "largeur": 30, "hauteur": 15},
             "is_active": True,
             "images": [
-                {"url": "https://via.placeholder.com/300x300?text=Imprimante", "is_primary": True}
+                {"url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRZxNilI4WMjEiOBWGSo_T0CMeStkKBPXB9LA&s", "is_primary": True}
             ]
         },
         {
@@ -329,7 +330,7 @@ def run():
             "dimensions": {"longueur": 90, "largeur": 40, "hauteur": 0.3},
             "is_active": True,
             "images": [
-                {"url": "https://via.placeholder.com/300x300?text=Tapis", "is_primary": True}
+                {"url": "https://www.grosbill.com/images_produits/4ce8346d-3612-4289-afb0-b8cebdc2ecf9.png", "is_primary": True}
             ]
         },
         {
@@ -344,17 +345,18 @@ def run():
             "dimensions": {"longueur": 10, "largeur": 10, "hauteur": 1.2},
             "is_active": True,
             "images": [
-                {"url": "https://via.placeholder.com/300x300?text=Station", "is_primary": True}
+                {"url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRmEdDnbJF6twsnznkn68to9LCx4JOnXESkMA&s", "is_primary": True}
             ]
         }
+        
     ]
 
     for prod in products:
-        p, _ = Product.objects.get_or_create(
+        p, created = Product.objects.get_or_create(
             sku=prod["sku"],
             defaults={
                 "name": prod["name"],
-                "description": prod["description"],
+                "description": prod.get("description", ""),
                 "category": cat,
                 "price": prod["price"],
                 "cost": prod["cost"],
@@ -365,6 +367,22 @@ def run():
                 "is_active": prod["is_active"],
             }
         )
+        if not created:
+            # Met à jour les champs et sauvegarde
+            p.name = prod["name"]
+            p.description = prod.get("description", "")
+            p.category = cat
+            p.price = prod["price"]
+            p.cost = prod["cost"]
+            p.unit = prod["unit"]
+            p.barcode = prod["barcode"]
+            p.weight = prod["weight"]
+            p.dimensions = prod["dimensions"]
+            p.is_active = True  # <-- Force l'activation du produit
+            p.save()
+            # Supprime les anciennes images pour ce produit
+            ProductImage.objects.filter(product=p).delete()
+        # Ajoute les images
         for img in prod["images"]:
             ProductImage.objects.get_or_create(product=p, url=img["url"], is_primary=img["is_primary"])
     print("Produits ajoutés avec succès.")

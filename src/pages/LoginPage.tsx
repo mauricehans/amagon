@@ -7,6 +7,10 @@ const LoginPage: React.FC = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [showReset, setShowReset] = useState(false);
+  const [resetEmail, setResetEmail] = useState('');
+  const [resetLoading, setResetLoading] = useState(false);
+  const [resetMsg, setResetMsg] = useState<string | null>(null);
   const { login } = useAuth();
   const navigate = useNavigate();
 
@@ -27,6 +31,28 @@ const LoginPage: React.FC = () => {
       setError('Invalid email or password');
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleResetPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setResetLoading(true);
+    setResetMsg(null);
+    try {
+      const response = await fetch('http://localhost:8005/api/sellers/password-reset/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: resetEmail }),
+      });
+      if (response.ok) {
+        setResetMsg('Un email de réinitialisation a été envoyé si ce compte existe.');
+      } else {
+        setResetMsg("Impossible d'envoyer l'email. Vérifiez l'adresse.");
+      }
+    } catch {
+      setResetMsg('Erreur de connexion au serveur.');
+    } finally {
+      setResetLoading(false);
     }
   };
 
@@ -62,9 +88,6 @@ const LoginPage: React.FC = () => {
             <div className="mb-4">
               <div className="flex justify-between">
                 <label htmlFor="password" className="form-label">Password</label>
-                <Link to="/forgot-password" className="text-sm text-amazon-teal hover:underline">
-                  Forgot your password?
-                </Link>
               </div>
               <input
                 type="password"
@@ -112,6 +135,39 @@ const LoginPage: React.FC = () => {
             Create your Amazon account
           </Link>
         </div>
+        
+        <div className="mt-4 text-center">
+          <button
+            className="text-amazon-orange hover:underline text-sm"
+            onClick={() => setShowReset(!showReset)}
+          >
+            Mot de passe oublié ?
+          </button>
+        </div>
+        
+        {showReset && (
+          <div className="mt-6 bg-white rounded shadow p-6 max-w-sm mx-auto">
+            <h2 className="text-lg font-bold mb-2">Réinitialiser le mot de passe</h2>
+            <form onSubmit={handleResetPassword} className="space-y-4">
+              <input
+                type="email"
+                className="form-input w-full"
+                placeholder="Votre email"
+                value={resetEmail}
+                onChange={e => setResetEmail(e.target.value)}
+                required
+              />
+              <button
+                type="submit"
+                className="btn btn-primary w-full"
+                disabled={resetLoading}
+              >
+                {resetLoading ? 'Envoi...' : 'Envoyer le lien'}
+              </button>
+            </form>
+            {resetMsg && <div className="mt-2 text-sm text-gray-600">{resetMsg}</div>}
+          </div>
+        )}
       </div>
     </div>
   );

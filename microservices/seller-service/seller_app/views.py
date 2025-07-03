@@ -319,3 +319,19 @@ def seller_analytics(request):
         
     except Exception as e:
         return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+@csrf_exempt
+@api_view(['POST'])
+def seller_password_reset(request):
+    """Réinitialisation du mot de passe vendeur (simulation d'envoi d'email)"""
+    try:
+        data = json.loads(request.body)
+        email = data.get('email')
+        if not email:
+            return Response({'error': 'Email is required'}, status=status.HTTP_400_BAD_REQUEST)
+        # Simule la présence de l'email (ne révèle pas si l'email existe)
+        # Ici, vous pouvez envoyer un vrai email si besoin
+        print(f"[INFO] Password reset requested for: {email}")
+        return Response({'message': 'Si ce compte existe, un email de réinitialisation a été envoyé.'})
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
