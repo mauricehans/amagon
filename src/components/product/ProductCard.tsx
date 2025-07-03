@@ -47,12 +47,23 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
     );
   };
 
+  // Correction de l'image principale
+  let mainImage = "";
+  if (product.images && product.images.length > 0) {
+    const primary = product.images.find(img => img.is_primary);
+    mainImage = primary ? primary.url : product.images[0].url;
+  } else if (product.image_url) {
+    mainImage = product.image_url;
+  } else {
+    mainImage = "https://via.placeholder.com/300x300?text=No+Image";
+  }
+
   return (
     <div className="product-card group">
       <Link to={`/product/${product.id}`} className="block">
         <div className="relative pb-[100%] mb-3 bg-white overflow-hidden">
           <img 
-            src={product.image_url || "https://via.placeholder.com/300x300?text=No+Image"} 
+            src={mainImage}
             alt={product.name} 
             className="absolute top-0 left-0 w-full h-full object-contain transition-transform group-hover:scale-105"
           />

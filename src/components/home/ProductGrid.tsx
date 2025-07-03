@@ -66,6 +66,10 @@ const ProductGrid: React.FC<ProductGridProps> = ({
           ))
         )}
       </div>
+      {/* Debug: Affiche un message si une image n'est pas trouvée */}
+      {/* {displayProducts.some(p => !p.image_url && (!p.images || p.images.length === 0)) && (
+        <div className="text-red-500 mt-2">Attention : Certains produits n'ont pas d'image valide.</div>
+      )} */}
     </section>
   );
 };
