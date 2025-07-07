@@ -69,8 +69,8 @@ class ProjectLauncher:
             },
             "Inventory Service": {
                 "path": "microservices/inventory-service",
-                "port": 8004,
-                "cmd": [sys.executable, "manage.py", "runserver", "8004"],
+                "port": 8002,
+                "cmd": [sys.executable, "manage.py", "runserver", "8002"],
                 "ready_message": "Starting development server at http://127.0.0.1:8002/",
                 "requirements": "requirements.txt",
                 "health_check": "http://localhost:8002/admin/"

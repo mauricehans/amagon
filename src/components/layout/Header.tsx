@@ -144,16 +144,16 @@ const Header: React.FC = () => {
 
           {/* Bottom header - categories (desktop) */}
           <div className="hidden md:flex items-center bg-amazon-blue py-1 text-sm">
-            <button className="flex items-center mr-3 hover:text-amazon-yellow">
+            <Link to="/all-products" className="flex items-center mr-3 hover:text-amazon-yellow">
               <Menu size={18} className="mr-1" />
               All
-            </button>
+            </Link>
             <nav className="flex space-x-4">
               <Link to="/category/electronics" className="hover:text-amazon-yellow">Electronics</Link>
               <Link to="/category/books" className="hover:text-amazon-yellow">Books</Link>
-              <Link to="/category/home" className="hover:text-amazon-yellow">Home & Kitchen</Link>
+              <Link to="/category/home-kitchen" className="hover:text-amazon-yellow">Home & Kitchen</Link>
               <Link to="/category/fashion" className="hover:text-amazon-yellow">Fashion</Link>
-              <Link to="/category/toys" className="hover:text-amazon-yellow">Toys & Games</Link>
+              <Link to="/category/toys-games" className="hover:text-amazon-yellow">Toys & Games</Link>
               <Link to="/deals" className="font-bold text-amazon-yellow hover:underline">Today's Deals</Link>
               <Link to="/seller/login" className="font-bold text-amazon-orange hover:underline">Sell on Amagon</Link>
               <button onClick={openSupportModal} className="font-bold text-green-400 hover:underline">Support</button>

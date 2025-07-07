@@ -129,12 +129,27 @@ def products_by_category(request, category_id):
     
     product_data = []
     for product in products:
-        images = ProductImage.objects.filter(product=product)
+        images = product.images.all()
+        primary_image = images.filter(is_primary=True).first() or images.first()
         product_data.append({
             'id': product.id,
             'name': product.name,
+            'description': product.description,
             'price': float(product.price),
-            'images': [{'url': img.url, 'is_primary': img.is_primary} for img in images]
+            'category': {
+                'id': product.category.id,
+                'name': product.category.name
+            },
+            'images': [{'url': img.url, 'is_primary': img.is_primary} for img in images],
+            'sku': product.sku,
+            'weight': float(product.weight) if product.weight else None,
+            'dimensions': product.dimensions,
+            'created_at': product.created_at.isoformat(),
+            'image_url': primary_image.url if primary_image else None,
+            'rating': 4.5,  # Mock value
+            'review_count': 12,  # Mock value
+            'category_name': product.category.name,
+            'stock_quantity': 10,  # Mock value
         })
     
     return Response(product_data)
@@ -169,12 +184,27 @@ def search_products(request):
     
     product_data = []
     for product in products:
-        images = ProductImage.objects.filter(product=product)
+        images = product.images.all()
+        primary_image = images.filter(is_primary=True).first() or images.first()
         product_data.append({
             'id': product.id,
             'name': product.name,
+            'description': product.description,
             'price': float(product.price),
-            'images': [{'url': img.url, 'is_primary': img.is_primary} for img in images]
+            'category': {
+                'id': product.category.id,
+                'name': product.category.name
+            },
+            'images': [{'url': img.url, 'is_primary': img.is_primary} for img in images],
+            'sku': product.sku,
+            'weight': float(product.weight) if product.weight else None,
+            'dimensions': product.dimensions,
+            'created_at': product.created_at.isoformat(),
+            'image_url': primary_image.url if primary_image else None,
+            'rating': 4.5,  # Mock value
+            'review_count': 12,  # Mock value
+            'category_name': product.category.name,
+            'stock_quantity': 10,  # Mock value
         })
     
     return Response(product_data)

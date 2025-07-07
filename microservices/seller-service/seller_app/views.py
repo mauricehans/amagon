@@ -1,3 +1,4 @@
+import requests
 from django.shortcuts import render, get_object_or_404
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
@@ -203,8 +204,81 @@ def seller_products(request):
 
 @api_view(['POST'])
 def create_product(request):
-    """Créer un nouveau produit"""
-    return seller_products(request)
+    """Créer un nouveau produit et le synchroniser avec le Product Service"""
+    try:
+        auth_header = request.headers.get('Authorization')
+        token = auth_header.split(' ')[1]
+        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])
+        seller = get_object_or_404(Seller, id=payload['seller_id'])
+        
+        data = json.loads(request.body)
+        
+        # 1. Récupérer l'ID de la catégorie depuis le Product Service
+        category_name = data.get('category')
+        if not category_name:
+            return Response({'error': 'Category name is required'}, status=status.HTTP_400_BAD_REQUEST)
+
+        category_id = None
+        try:
+            categories_response = requests.get('http://localhost:8004/api/categories/')
+            categories_response.raise_for_status() # Lève une exception pour les codes d'erreur HTTP
+            categories = categories_response.json()
+            found_category = next((cat for cat in categories if cat['name'].lower() == category_name.lower()), None)
+            if found_category:
+                category_id = found_category['id']
+            else:
+                return Response({'error': f'Category \'{category_name}\' not found in Product Service'}, status=status.HTTP_400_BAD_REQUEST)
+        except requests.exceptions.RequestException as e:
+            return Response({'error': f'Failed to connect to Product Service to get categories: {e}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        # 2. Créer le produit dans le Seller Service
+        seller_product = SellerProduct.objects.create(
+            seller=seller,
+            name=data['name'],
+            description=data['description'],
+            category=category_name, # Stocke le nom de la catégorie dans le SellerProduct
+            price=data['price'],
+            cost=data.get('cost', 0),
+            sku=data.get('sku', ''),
+            stock_quantity=data.get('stock_quantity', 0),
+            images=data.get('images', []), # Assurez-vous que les images sont une liste de dicts
+            specifications=data.get('specifications', {}),
+            is_active=data.get('is_active', True)
+        )
+
+        # 3. Synchroniser le produit avec le Product Service
+        product_service_payload = {
+            'name': data['name'],
+            'description': data['description'],
+            'category_id': category_id, # Utilise l'ID de la catégorie
+            'price': data['price'],
+            'sku': data.get('sku', ''),
+            'weight': data.get('weight', 0.0), # Assurez-vous que ces champs existent dans le modèle Product
+            'dimensions': data.get('dimensions', ''), # Assurez-vous que ces champs existent dans le modèle Product
+            'is_active': data.get('is_active', True),
+            'images': data.get('images', []), # Passe les images au Product Service
+        }
+        
+        print(f"DEBUG: Sending payload to Product Service: {product_service_payload}")
+
+        try:
+            product_response = requests.post('http://localhost:8004/api/products/', json=product_service_payload)
+            product_response.raise_for_status() # Lève une exception pour les codes d'erreur HTTP
+            product_data_from_service = product_response.json()
+            print(f"DEBUG: Product Service response: {product_data_from_service}")
+            # Optionnel: stocker l'ID du produit du Product Service dans le SellerProduct si nécessaire
+            # seller_product.product_service_id = product_data_from_service['id']
+            # seller_product.save()
+        except requests.exceptions.RequestException as e:
+            # Gérer l'échec de la synchronisation avec le Product Service
+            # Vous pourriez vouloir supprimer le produit du SellerService ici ou le marquer comme non synchronisé
+            print(f"WARNING: Failed to sync product with Product Service: {e}")
+            # Ne pas retourner d'erreur au client pour l'instant, mais logguer
+
+        return Response(SellerProductSerializer(seller_product).data, status=status.HTTP_201_CREATED)
+            
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['GET'])
 def product_detail(request, product_id):

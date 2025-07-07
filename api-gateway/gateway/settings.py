@@ -103,13 +103,12 @@ CORS_ALLOWED_ORIGINS = [
 # Microservices URLs
 MICROSERVICES = {
     'auth': 'http://localhost:8001',
-    'product': 'http://localhost:8002',
-    'inventory': 'http://localhost:8003',
-    'notification': 'http://localhost:8004',
+    'inventory': 'http://localhost:8002',
+    'order': 'http://localhost:8003',
+    'product': 'http://localhost:8004',
     'seller': 'http://localhost:8005',
     'store': 'http://localhost:8006',
-    'order': 'http://localhost:8007',
-    'admin': 'http://localhost:8008',
+    'admin': 'http://localhost:8007',
 }
 
 # JWT Settings

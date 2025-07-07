@@ -37,7 +37,7 @@ const SellerProductCreatePage: React.FC = () => {
     setSuccess(null);
     try {
       const token = localStorage.getItem('sellerToken');
-      const response = await fetch('http://localhost:8005/api/sellers/products/', {
+      const response = await fetch('http://localhost:8005/api/sellers/products/create/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -23,6 +23,9 @@ import SellerProductDetailPage from './pages/seller/SellerProductDetailPage';
 import SellerProductUpdatePage from './pages/seller/SellerProductUpdatePage';
 import SellerOrdersPage from './pages/seller/SellerOrdersPage';
 import SellerAnalyticsPage from './pages/seller/SellerAnalyticsPage';
+import SearchResultsPage from './pages/SearchResultsPage';
+import CategoryPage from './pages/CategoryPage';
+import AllProductsPage from './pages/AllProductsPage';
 
 const AppRoutes = () => (
   <Routes>
@@ -58,6 +61,9 @@ const AppRoutes = () => (
             <Route path="/register" element={<RegisterPage />} />
             <Route path="/account" element={<AccountPage />} />
             <Route path="/orders" element={<OrdersPage />} />
+            <Route path="/search" element={<SearchResultsPage />} />
+            <Route path="/category/:categoryName" element={<CategoryPage />} />
+            <Route path="/all-products" element={<AllProductsPage />} />
             <Route path="*" element={<NotFoundPage />} />
           </Routes>
         </main>
