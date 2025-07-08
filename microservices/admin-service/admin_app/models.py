@@ -1,11 +1,16 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 import uuid
+import hashlib
+import os
+from datetime import timedelta
+from django.utils import timezone
 
 class AdminUser(AbstractUser):
     """Modèle d'utilisateur admin personnalisé"""
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     role = models.CharField(max_length=50, default='admin')
+    salt = models.CharField(max_length=16, blank=True)
     department = models.CharField(max_length=100, blank=True)
     phone = models.CharField(max_length=20, blank=True)
     is_super_admin = models.BooleanField(default=False)
@@ -14,6 +19,35 @@ class AdminUser(AbstractUser):
 
     class Meta:
         db_table = 'admin_users'
+
+    def set_password(self, raw_password):
+        if not self.salt:
+            self.salt = os.urandom(8).hex()
+        self.password = hashlib.md5((self.salt + raw_password).encode()).hexdigest()
+
+    def check_password(self, raw_password):
+        return self.password == hashlib.md5((self.salt + raw_password).encode()).hexdigest()
+
+class AdminToken(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.ForeignKey(AdminUser, on_delete=models.CASCADE, related_name='auth_tokens')
+    token = models.CharField(max_length=64, unique=True)
+    expires_at = models.DateTimeField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    last_used = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        db_table = 'admin_tokens'
+
+    def save(self, *args, **kwargs):
+        if not self.token:
+            self.token = os.urandom(32).hex()
+        if not self.expires_at:
+            self.expires_at = timezone.now() + timedelta(days=7)
+        super().save(*args, **kwargs)
+
+    def is_expired(self):
+        return self.expires_at < timezone.now()
 
 class SupportTicket(models.Model):
     """Tickets de support des utilisateurs et vendeurs"""
