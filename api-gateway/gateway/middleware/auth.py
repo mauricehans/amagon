@@ -1,7 +1,6 @@
 from django.http import JsonResponse
 from rest_framework import status
-import jwt
-from django.conf import settings
+import requests
 
 class AuthMiddleware:
     def __init__(self, get_response):
@@ -20,17 +19,33 @@ class AuthMiddleware:
 
         try:
             token = auth_header.split(' ')[1]
-            payload = jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])
-            request.user_id = payload.get('user_id')
-        except jwt.ExpiredSignatureError:
+            
+            # Déterminer le service d'authentification en fonction du chemin
+            auth_service_url = self._get_auth_service_url(request.path)
+            if not auth_service_url:
+                return JsonResponse(
+                    {'error': 'Invalid authentication service for this path'}, 
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            # Valider le token auprès du service d'authentification
+            response = requests.post(f"{auth_service_url}/verify_token/", json={'token': token})
+
+            if response.status_code != 200:
+                return JsonResponse(
+                    {'error': 'Invalid or expired token'}, 
+                    status=status.HTTP_401_UNAUTHORIZED
+                )
+
+            # Ajouter les informations utilisateur à la requête
+            user_data = response.json().get('user')
+            if user_data:
+                request.user_id = user_data.get('id')
+
+        except (requests.exceptions.RequestException, IndexError):
             return JsonResponse(
-                {'error': 'Token has expired'}, 
-                status=status.HTTP_401_UNAUTHORIZED
-            )
-        except (jwt.InvalidTokenError, IndexError):
-            return JsonResponse(
-                {'error': 'Invalid token'}, 
-                status=status.HTTP_401_UNAUTHORIZED
+                {'error': 'Invalid token or authentication service unavailable'}, 
+                status=status.HTTP_503_SERVICE_UNAVAILABLE
             )
 
         return self.get_response(request)
@@ -39,6 +54,17 @@ class AuthMiddleware:
         public_paths = [
             '/api/auth/login',
             '/api/auth/register',
+            '/api/seller/login',
+            '/api/seller/register',
+            '/api/admin/login',
             '/api/products',
         ]
         return not any(path.startswith(public_path) for public_path in public_paths)
+
+    def _get_auth_service_url(self, path):
+        if path.startswith('/api/seller'):
+            return 'http://localhost:8006/api/seller'
+        elif path.startswith('/api/admin'):
+            return 'http://localhost:8007/api/admin'
+        else:
+            return 'http://localhost:8002/api/auth'

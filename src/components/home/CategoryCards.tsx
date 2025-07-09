@@ -51,9 +51,9 @@ const CategoryCards: React.FC = () => {
               />
             </div>
             
-            <a href={category.link} className="text-amazon-teal text-sm hover:underline">
+            <span className="text-amazon-teal text-sm hover:underline cursor-pointer">
               Shop now
-            </a>
+            </span>
           </Link>
         </div>
       ))}

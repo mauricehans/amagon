@@ -9,10 +9,10 @@ from django.db.models import Sum, Count, Q
 from django.utils import timezone
 from datetime import datetime, timedelta
 import json
-import jwt
-from django.conf import settings
+
 from .models import Seller, SellerProduct, SellerOrder, SellerAnalytics
 from .serializers import SellerSerializer, SellerProductSerializer, SellerOrderSerializer
+from . import token_service
 
 @csrf_exempt
 @api_view(['POST'])
@@ -21,31 +21,25 @@ def seller_register(request):
     try:
         data = json.loads(request.body)
         
-        # Vérifier si l'email existe déjà
         if Seller.objects.filter(email=data['email']).exists():
             return Response({'error': 'Email already exists'}, status=status.HTTP_400_BAD_REQUEST)
         
-        # Créer le vendeur
-        seller = Seller.objects.create(
+        seller = Seller(
             name=data['name'],
             email=data['email'],
             phone=data.get('phone', ''),
             company_name=data.get('company_name', ''),
             business_type=data.get('business_type', 'individual'),
-            address=data.get('address', {}),
-            password=data['password']  # En production, hasher le mot de passe
+            address=data.get('address', {})
         )
+        seller.set_password(data['password'])
+        seller.save()
         
-        # Générer un token JWT
-        token = jwt.encode({
-            'seller_id': str(seller.id),
-            'email': seller.email,
-            'exp': timezone.now() + timedelta(days=7)
-        }, settings.SECRET_KEY, algorithm='HS256')
+        token = token_service.create_seller_token(seller)
         
         return Response({
             'message': 'Seller registered successfully',
-            'token': token,
+            'token': token.token,
             'seller': SellerSerializer(seller).data
         }, status=status.HTTP_201_CREATED)
         
@@ -61,21 +55,19 @@ def seller_login(request):
         email = data['email']
         password = data['password']
         
-        # Vérifier les identifiants
-        seller = Seller.objects.filter(email=email, password=password).first()
-        if not seller:
+        try:
+            seller = Seller.objects.get(email=email)
+        except Seller.DoesNotExist:
+            return Response({'error': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
+
+        if not seller.check_password(password):
             return Response({'error': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
         
-        # Générer un token JWT
-        token = jwt.encode({
-            'seller_id': str(seller.id),
-            'email': seller.email,
-            'exp': timezone.now() + timedelta(days=7)
-        }, settings.SECRET_KEY, algorithm='HS256')
+        token = token_service.create_seller_token(seller)
         
         return Response({
             'message': 'Login successful',
-            'token': token,
+            'token': token.token,
             'seller': SellerSerializer(seller).data
         }, status=status.HTTP_200_OK)
         
@@ -86,14 +78,9 @@ def seller_login(request):
 def seller_profile(request):
     """Profil du vendeur"""
     try:
-        # Récupérer le vendeur depuis le token
-        auth_header = request.headers.get('Authorization')
-        if not auth_header:
-            return Response({'error': 'No authorization token'}, status=status.HTTP_401_UNAUTHORIZED)
-        
-        token = auth_header.split(' ')[1]
-        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])
-        seller = get_object_or_404(Seller, id=payload['seller_id'])
+        seller = get_seller_from_token(request)
+        if not seller:
+            return Response({'error': 'Invalid or expired token'}, status=status.HTTP_401_UNAUTHORIZED)
         
         if request.method == 'GET':
             return Response(SellerSerializer(seller).data)
@@ -113,11 +100,9 @@ def seller_profile(request):
 def seller_dashboard(request):
     """Tableau de bord du vendeur"""
     try:
-        # Récupérer le vendeur
-        auth_header = request.headers.get('Authorization')
-        token = auth_header.split(' ')[1]
-        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])
-        seller = get_object_or_404(Seller, id=payload['seller_id'])
+        seller = get_seller_from_token(request)
+        if not seller:
+            return Response({'error': 'Invalid or expired token'}, status=status.HTTP_401_UNAUTHORIZED)
         
         # Statistiques générales
         total_products = SellerProduct.objects.filter(seller=seller).count()
@@ -171,11 +156,9 @@ def seller_dashboard(request):
 def seller_products(request):
     """Gestion des produits du vendeur"""
     try:
-        # Récupérer le vendeur
-        auth_header = request.headers.get('Authorization')
-        token = auth_header.split(' ')[1]
-        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])
-        seller = get_object_or_404(Seller, id=payload['seller_id'])
+        seller = get_seller_from_token(request)
+        if not seller:
+            return Response({'error': 'Invalid or expired token'}, status=status.HTTP_401_UNAUTHORIZED)
         
         if request.method == 'GET':
             products = SellerProduct.objects.filter(seller=seller)
@@ -210,10 +193,9 @@ def create_product(request):
 def product_detail(request, product_id):
     """Détails d'un produit"""
     try:
-        auth_header = request.headers.get('Authorization')
-        token = auth_header.split(' ')[1]
-        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])
-        seller = get_object_or_404(Seller, id=payload['seller_id'])
+        seller = get_seller_from_token(request)
+        if not seller:
+            return Response({'error': 'Invalid or expired token'}, status=status.HTTP_401_UNAUTHORIZED)
         
         product = get_object_or_404(SellerProduct, id=product_id, seller=seller)
         return Response(SellerProductSerializer(product).data)
@@ -225,10 +207,9 @@ def product_detail(request, product_id):
 def update_product(request, product_id):
     """Mettre à jour un produit"""
     try:
-        auth_header = request.headers.get('Authorization')
-        token = auth_header.split(' ')[1]
-        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])
-        seller = get_object_or_404(Seller, id=payload['seller_id'])
+        seller = get_seller_from_token(request)
+        if not seller:
+            return Response({'error': 'Invalid or expired token'}, status=status.HTTP_401_UNAUTHORIZED)
         
         product = get_object_or_404(SellerProduct, id=product_id, seller=seller)
         data = json.loads(request.body)
@@ -247,10 +228,9 @@ def update_product(request, product_id):
 def delete_product(request, product_id):
     """Supprimer un produit"""
     try:
-        auth_header = request.headers.get('Authorization')
-        token = auth_header.split(' ')[1]
-        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])
-        seller = get_object_or_404(Seller, id=payload['seller_id'])
+        seller = get_seller_from_token(request)
+        if not seller:
+            return Response({'error': 'Invalid or expired token'}, status=status.HTTP_401_UNAUTHORIZED)
         
         product = get_object_or_404(SellerProduct, id=product_id, seller=seller)
         product.delete()
@@ -264,10 +244,9 @@ def delete_product(request, product_id):
 def seller_orders(request):
     """Commandes du vendeur"""
     try:
-        auth_header = request.headers.get('Authorization')
-        token = auth_header.split(' ')[1]
-        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])
-        seller = get_object_or_404(Seller, id=payload['seller_id'])
+        seller = get_seller_from_token(request)
+        if not seller:
+            return Response({'error': 'Invalid or expired token'}, status=status.HTTP_401_UNAUTHORIZED)
         
         orders = SellerOrder.objects.filter(seller=seller).order_by('-created_at')
         return Response(SellerOrderSerializer(orders, many=True).data)
@@ -279,10 +258,9 @@ def seller_orders(request):
 def seller_analytics(request):
     """Analyses et statistiques détaillées"""
     try:
-        auth_header = request.headers.get('Authorization')
-        token = auth_header.split(' ')[1]
-        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])
-        seller = get_object_or_404(Seller, id=payload['seller_id'])
+        seller = get_seller_from_token(request)
+        if not seller:
+            return Response({'error': 'Invalid or expired token'}, status=status.HTTP_401_UNAUTHORIZED)
         
         # Analyses par période
         today = timezone.now().date()
@@ -335,3 +313,15 @@ def seller_password_reset(request):
         return Response({'message': 'Si ce compte existe, un email de réinitialisation a été envoyé.'})
     except Exception as e:
         return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+def get_seller_from_token(request):
+    """Récupérer le vendeur depuis le token"""
+    try:
+        auth_header = request.headers.get('Authorization')
+        if not auth_header:
+            return None
+        
+        token_string = auth_header.split(' ')[1]
+        return token_service.validate_seller_token(token_string)
+    except:
+        return None

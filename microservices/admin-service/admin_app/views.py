@@ -9,11 +9,10 @@ from django.db.models import Count, Q, Avg
 from django.utils import timezone
 from datetime import datetime, timedelta
 import json
-import jwt
-from django.conf import settings
 import requests
 
 from .models import AdminUser, SupportTicket, TicketMessage, TicketActivity, AdminDashboardStats
+from . import token_service
 
 @csrf_exempt
 @api_view(['POST'])
@@ -24,22 +23,19 @@ def admin_login(request):
         username = data.get('username')
         password = data.get('password')
         
-        # Authentifier l'admin
-        admin = authenticate(username=username, password=password)
-        if not admin or not isinstance(admin, AdminUser):
+        try:
+            admin = AdminUser.objects.get(username=username)
+        except AdminUser.DoesNotExist:
+            return Response({'error': 'Identifiants invalides'}, status=status.HTTP_401_UNAUTHORIZED)
+
+        if not admin.check_password(password):
             return Response({'error': 'Identifiants invalides'}, status=status.HTTP_401_UNAUTHORIZED)
         
-        # Générer un token JWT
-        token = jwt.encode({
-            'admin_id': str(admin.id),
-            'username': admin.username,
-            'is_super_admin': admin.is_super_admin,
-            'exp': timezone.now() + timedelta(days=1)
-        }, settings.SECRET_KEY, algorithm='HS256')
+        token = token_service.create_admin_token(admin)
         
         return Response({
             'message': 'Connexion réussie',
-            'token': token,
+            'token': token.token,
             'admin': {
                 'id': str(admin.id),
                 'username': admin.username,
@@ -56,7 +52,17 @@ def admin_login(request):
 @api_view(['POST'])
 def admin_logout(request):
     """Déconnexion admin"""
-    return Response({'message': 'Déconnexion réussie'})
+    try:
+        auth_header = request.headers.get('Authorization')
+        if not auth_header:
+            return Response({'error': 'No authorization token'}, status=status.HTTP_401_UNAUTHORIZED)
+        
+        token_string = auth_header.split(' ')[1]
+        token_service.revoke_admin_token(token_string)
+        
+        return Response({'message': 'Déconnexion réussie'})
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['GET'])
 def admin_profile(request):
@@ -687,15 +693,13 @@ def admin_management(request):
         return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 def get_admin_from_token(request):
-    """Récupérer l'admin depuis le token JWT"""
+    """Récupérer l'admin depuis le token"""
     try:
         auth_header = request.headers.get('Authorization')
         if not auth_header:
             return None
         
-        token = auth_header.split(' ')[1]
-        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])
-        admin = AdminUser.objects.get(id=payload['admin_id'])
-        return admin
+        token_string = auth_header.split(' ')[1]
+        return token_service.validate_admin_token(token_string)
     except:
         return None
