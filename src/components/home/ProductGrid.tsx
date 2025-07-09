@@ -23,7 +23,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({
       try {
         setLoading(true);
         setError(null);
-        const response = await fetch('http://localhost:8005/api/products/');
+        const response = await fetch('http://localhost:8002/api/products/'); // <-- port corrigé
         if (!response.ok) {
           setError('Failed to fetch products.');
           setProducts([]);

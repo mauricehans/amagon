@@ -19,7 +19,7 @@ const ProductDetailPage: React.FC = () => {
       try {
         setLoading(true);
         setError(null);
-        const response = await fetch(`http://localhost:8004/api/products/${id}/`);
+        const response = await fetch(`http://localhost:8002/api/products/${id}/`);
         if (!response.ok) {
           setProduct(null);
           setError('Product not found.');
@@ -188,9 +188,15 @@ const ProductDetailPage: React.FC = () => {
             </div>
             
             <div className="border-b border-gray-200 pb-4 mb-4">
-              <div className="text-sm mb-2">List Price: <span className="line-through">${(product.price * 1.2).toFixed(2)}</span></div>
+              <div className="text-sm mb-2">
+                List Price: <span className="line-through">
+                  ${Number(Number(product.price) * 1.2).toFixed(2)}
+                </span>
+              </div>
               <div className="flex items-baseline">
-                <span className="text-amazon-error text-2xl font-bold">${product.price.toFixed(2)}</span>
+                <span className="text-amazon-error text-2xl font-bold">
+                  ${Number(product.price).toFixed(2)}
+                </span>
                 <span className="ml-2 text-amazon-success">Save 20%</span>
               </div>
             </div>
@@ -266,7 +272,7 @@ const ProductDetailPage: React.FC = () => {
           <div className="col-span-1">
             <div className="border border-gray-200 rounded p-4 sticky top-4">
               <div className="text-amazon-error text-xl font-bold mb-2">
-                ${product.price.toFixed(2)}
+                ${Number(product.price).toFixed(2)}
               </div>
               
               <div className="text-amazon-success text-sm mb-4">
@@ -336,7 +342,9 @@ const ProductDetailPage: React.FC = () => {
           <div className="flex flex-col md:flex-row">
             <div className="md:w-1/3 mb-6 md:mb-0 pr-6">
               <div className="flex items-baseline mb-2">
-                <span className="text-amazon-warning text-xl font-bold mr-2">{product.rating.toFixed(1)}</span>
+                <span className="text-amazon-warning text-xl font-bold mr-2">
+                  {(Number(product.rating) || 0).toFixed(1)}
+                </span>
                 <span>out of 5</span>
               </div>
               

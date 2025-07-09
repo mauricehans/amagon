@@ -65,7 +65,7 @@ const CartPage: React.FC = () => {
                       <div className="text-amazon-success text-sm mt-1">In Stock</div>
                       
                       <div className="text-amazon-error font-bold mt-1">
-                        ${item.price.toFixed(2)}
+                        ${Number(item.price).toFixed(2)}
                       </div>
                       
                       <div className="flex items-center mt-2">
@@ -94,7 +94,7 @@ const CartPage: React.FC = () => {
               
               <div className="flex justify-end pt-4 border-t border-gray-200 mt-4">
                 <div className="text-xl">
-                  Subtotal ({itemCount} items): <span className="font-bold">${total.toFixed(2)}</span>
+                  Subtotal ({itemCount} items): <span className="font-bold">${Number(total).toFixed(2)}</span>
                 </div>
               </div>
             </div>
@@ -116,7 +116,7 @@ const CartPage: React.FC = () => {
               </div>
               
               <div className="text-xl mb-4">
-                Subtotal ({itemCount} items): <span className="font-bold">${total.toFixed(2)}</span>
+                Subtotal ({itemCount} items): <span className="font-bold">${Number(total).toFixed(2)}</span>
               </div>
               
               <div className="flex items-center mb-4">

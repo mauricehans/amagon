@@ -3,8 +3,9 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from rest_framework import status
+from rest_framework import status, generics
 from .models import Product, Category, ProductImage
+from .serializers import ProductSerializer
 import json
 
 @api_view(['GET', 'POST'])
@@ -178,3 +179,11 @@ def search_products(request):
         })
     
     return Response(product_data)
+
+class ProductListAPIView(generics.ListAPIView):
+    queryset = Product.objects.filter(is_active=True)
+    serializer_class = ProductSerializer
+
+class ProductDetailAPIView(generics.RetrieveAPIView):
+    queryset = Product.objects.filter(is_active=True)
+    serializer_class = ProductSerializer
