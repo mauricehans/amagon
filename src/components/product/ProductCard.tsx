@@ -24,7 +24,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   };
 
   // Format price to show 2 decimal places
-  const formattedPrice = product.price.toFixed(2);
+  const formattedPrice = Number(product.price).toFixed(2);
 
   // Render rating stars
   const renderRating = () => {
@@ -78,14 +78,13 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             ${formattedPrice}
           </span>
         </div>
-        
-        <button 
-          onClick={handleAddToCart}
-          className="mt-3 w-full py-1 bg-amazon-yellow hover:bg-amazon-yellow-hover text-black text-sm font-medium rounded transition-colors"
-        >
-          Add to Cart
-        </button>
       </Link>
+      <button 
+        onClick={handleAddToCart}
+        className="mt-3 w-full py-1 bg-amazon-yellow hover:bg-amazon-yellow-hover text-black text-sm font-medium rounded transition-colors"
+      >
+        Add to Cart
+      </button>
     </div>
   );
 };
