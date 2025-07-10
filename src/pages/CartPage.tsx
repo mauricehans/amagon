@@ -1,11 +1,12 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Trash2, Check } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import ProductGrid from '../components/home/ProductGrid';
 
 const CartPage: React.FC = () => {
   const { items, removeItem, updateQuantity, total, clearCart, itemCount } = useCart();
+  const navigate = useNavigate();
   
   if (items.length === 0) {
     return (
@@ -124,12 +125,13 @@ const CartPage: React.FC = () => {
                 <label htmlFor="gift">This order contains a gift</label>
               </div>
               
-              <Link 
-                to="/checkout" 
-                className="block w-full py-2 bg-amazon-yellow hover:bg-amazon-yellow-hover text-center rounded font-medium mb-2"
+              <button
+                className="btn btn-primary w-full mt-4"
+                onClick={() => navigate('/payment', { state: { products: items } })}
+                disabled={items.length === 0}
               >
-                Proceed to checkout
-              </Link>
+                Procéder au paiement
+              </button>
             </div>
             
             <div className="bg-white p-6 rounded shadow-sm">

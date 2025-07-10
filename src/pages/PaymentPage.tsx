@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { CreditCard, Lock, Download, CheckCircle } from 'lucide-react';
+import jsPDF from "jspdf";
 
 interface PaymentFormData {
   cardNumber: string;
@@ -32,10 +33,9 @@ const PaymentPage: React.FC = () => {
   const [paymentSuccess, setPaymentSuccess] = useState(false);
   const [receiptUrl, setReceiptUrl] = useState<string | null>(null);
   
-  // Récupérer les données du produit depuis la navigation
-  const product = location.state?.product as Product;
-  const quantity = location.state?.quantity || 1;
-  
+  // Récupérer les données des produits depuis la navigation (panier ou achat direct)
+  const products: Product[] = location.state?.products || (location.state?.product ? [location.state.product] : []);
+
   const [formData, setFormData] = useState<PaymentFormData>({
     cardNumber: '',
     cardHolder: '',
@@ -106,16 +106,34 @@ const PaymentPage: React.FC = () => {
   };
 
   const downloadReceipt = () => {
-    // Simuler le téléchargement du PDF
-    const link = document.createElement('a');
-    link.href = '/receipt.pdf';
-    link.download = `receipt-${Date.now()}.pdf`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    const doc = new jsPDF();
+    doc.setFontSize(16);
+    doc.text("Reçu de paiement", 10, 15);
+
+    doc.setFontSize(12);
+    let y = 30;
+    doc.text("Produits achetés :", 10, y);
+    y += 8;
+
+    products.forEach((p, idx) => {
+      doc.text(
+        `${idx + 1}. ${p.name} — ${Number(p.price).toFixed(2)} € x ${p.quantity || 1}`,
+        10,
+        y
+      );
+      y += 8;
+    });
+
+    y += 4;
+    doc.text(`Total : ${total.toFixed(2)} €`, 10, y);
+
+    y += 10;
+    doc.text("Merci pour votre achat !", 10, y);
+
+    doc.save("recu-commande.pdf");
   };
 
-  if (!product) {
+  if (!products || products.length === 0) {
     return (
       <div className="container-custom py-8 text-center">
         <h1 className="text-2xl font-bold mb-4">Erreur</h1>
@@ -130,7 +148,7 @@ const PaymentPage: React.FC = () => {
     );
   }
 
-  const total = product.price * quantity;
+  const total = products.reduce((sum, p) => sum + p.price * (p.quantity || 1), 0);
 
   if (paymentSuccess) {
     return (
@@ -139,7 +157,17 @@ const PaymentPage: React.FC = () => {
           <CheckCircle size={64} className="text-amazon-success mx-auto mb-4" />
           <h1 className="text-2xl font-bold mb-4">Paiement réussi !</h1>
           <p className="mb-6">Votre commande a été traitée avec succès.</p>
-          
+          <div className="mb-6 text-left">
+            <h3 className="font-bold mb-2">Produits achetés :</h3>
+            <ul>
+              {products.map((p) => (
+                <li key={p.id} className="mb-2">
+                  <span className="font-medium">{p.name}</span> — {Number(p.price).toFixed(2)} € x {p.quantity || 1}
+                </li>
+              ))}
+            </ul>
+            <div className="font-bold mt-2">Total : {total.toFixed(2)} €</div>
+          </div>
           {receiptUrl && (
             <button 
               onClick={downloadReceipt}
@@ -149,7 +177,6 @@ const PaymentPage: React.FC = () => {
               Télécharger le reçu PDF
             </button>
           )}
-          
           <button 
             onClick={() => navigate('/')}
             className="btn btn-outline mt-4"
@@ -165,7 +192,6 @@ const PaymentPage: React.FC = () => {
     <div className="bg-gray-100 min-h-screen">
       <div className="container-custom py-8">
         <h1 className="text-2xl font-bold mb-6">Informations de paiement</h1>
-        
         <div className="flex flex-col lg:flex-row gap-6">
           {/* Formulaire de paiement */}
           <div className="lg:w-2/3">
@@ -174,11 +200,9 @@ const PaymentPage: React.FC = () => {
                 <Lock size={20} className="text-amazon-teal mr-2" />
                 <span className="text-sm text-gray-600">Vos informations de paiement sont sécurisées</span>
               </div>
-              
               <form onSubmit={handleSubmit}>
                 <div className="mb-6">
                   <h3 className="font-bold text-lg mb-4">Carte de crédit ou de débit</h3>
-                  
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="md:col-span-2">
                       <label className="form-label">Numéro de carte</label>
@@ -192,7 +216,6 @@ const PaymentPage: React.FC = () => {
                         required
                       />
                     </div>
-                    
                     <div className="md:col-span-2">
                       <label className="form-label">Nom du titulaire</label>
                       <input 
@@ -203,7 +226,6 @@ const PaymentPage: React.FC = () => {
                         required
                       />
                     </div>
-                    
                     <div>
                       <label className="form-label">Mois d'expiration</label>
                       <select 
@@ -220,7 +242,6 @@ const PaymentPage: React.FC = () => {
                         ))}
                       </select>
                     </div>
-                    
                     <div>
                       <label className="form-label">Année d'expiration</label>
                       <select 
@@ -235,7 +256,6 @@ const PaymentPage: React.FC = () => {
                         ))}
                       </select>
                     </div>
-                    
                     <div>
                       <label className="form-label">Code de sécurité (CVV)</label>
                       <input 
@@ -250,10 +270,8 @@ const PaymentPage: React.FC = () => {
                     </div>
                   </div>
                 </div>
-                
                 <div className="mb-6">
                   <h3 className="font-bold text-lg mb-4">Adresse de facturation</h3>
-                  
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="md:col-span-2">
                       <label className="form-label">Adresse</label>
@@ -265,7 +283,6 @@ const PaymentPage: React.FC = () => {
                         required
                       />
                     </div>
-                    
                     <div>
                       <label className="form-label">Ville</label>
                       <input 
@@ -276,7 +293,6 @@ const PaymentPage: React.FC = () => {
                         required
                       />
                     </div>
-                    
                     <div>
                       <label className="form-label">État/Région</label>
                       <input 
@@ -287,7 +303,6 @@ const PaymentPage: React.FC = () => {
                         required
                       />
                     </div>
-                    
                     <div>
                       <label className="form-label">Code postal</label>
                       <input 
@@ -298,7 +313,6 @@ const PaymentPage: React.FC = () => {
                         required
                       />
                     </div>
-                    
                     <div>
                       <label className="form-label">Pays</label>
                       <select 
@@ -316,7 +330,6 @@ const PaymentPage: React.FC = () => {
                     </div>
                   </div>
                 </div>
-                
                 <button 
                   type="submit"
                   disabled={isProcessing}
@@ -327,24 +340,24 @@ const PaymentPage: React.FC = () => {
               </form>
             </div>
           </div>
-          
           {/* Résumé de la commande */}
           <div className="lg:w-1/3">
             <div className="bg-white p-6 rounded shadow-sm sticky top-4">
               <h3 className="font-bold text-lg mb-4">Résumé de la commande</h3>
-              
-              <div className="flex items-center mb-4">
-                <img 
-                  src={product.image_url} 
-                  alt={product.name}
-                  className="w-16 h-16 object-contain mr-4"
-                />
-                <div>
-                  <h4 className="font-medium">{product.name}</h4>
-                  <p className="text-sm text-gray-600">Quantité: {quantity}</p>
+              {products.map((p) => (
+                <div key={p.id} className="flex items-center mb-4">
+                  <img 
+                    src={p.image_url} 
+                    alt={p.name}
+                    className="w-16 h-16 object-contain mr-4"
+                  />
+                  <div>
+                    <h4 className="font-medium">{p.name}</h4>
+                    <p className="text-sm text-gray-600">Quantité: {p.quantity || 1}</p>
+                    <p className="text-sm text-gray-600">Prix unitaire: {Number(p.price).toFixed(2)} €</p>
+                  </div>
                 </div>
-              </div>
-              
+              ))}
               <div className="border-t border-gray-200 pt-4">
                 <div className="flex justify-between mb-2">
                   <span>Sous-total:</span>
