@@ -156,15 +156,35 @@ def seller_dashboard(request):
 def seller_products(request):
     """Gestion des produits du vendeur"""
     try:
-        seller = get_seller_from_token(request)
-        if not seller:
-            return Response({'error': 'Invalid or expired token'}, status=status.HTTP_401_UNAUTHORIZED)
-        
+        # Temporairement, on retourne tous les produits sans authentification pour la démo
         if request.method == 'GET':
-            products = SellerProduct.objects.filter(seller=seller)
-            return Response(SellerProductSerializer(products, many=True).data)
+            products = SellerProduct.objects.filter(is_active=True)
+            # Adapter le format pour le frontend
+            product_data = []
+            for product in products:
+                # Prendre la première image comme image principale
+                main_image = product.images[0] if product.images else None
+                product_data.append({
+                    'id': str(product.id),  # Convertir UUID en string
+                    'name': product.name,
+                    'description': product.description,
+                    'price': float(product.price),
+                    'category_name': product.category,
+                    'stock_quantity': product.stock_quantity,
+                    'image_url': main_image if main_image else "https://via.placeholder.com/300x300?text=No+Image",
+                    'rating': 4.5,  # Mock value
+                    'review_count': 12,  # Mock value
+                    'seller_name': product.seller.name,
+                    'images': [{'url': img, 'is_primary': i == 0} for i, img in enumerate(product.images)]
+                })
+            return Response(product_data)
         
+        # Pour POST, on garde l'authentification
         elif request.method == 'POST':
+            seller = get_seller_from_token(request)
+            if not seller:
+                return Response({'error': 'Invalid or expired token'}, status=status.HTTP_401_UNAUTHORIZED)
+            
             data = json.loads(request.body)
             product = SellerProduct.objects.create(
                 seller=seller,
