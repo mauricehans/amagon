@@ -19,18 +19,48 @@ const ProductGrid: React.FC<ProductGridProps> = ({
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchProducts = async () => {
+    const fetchAllProducts = async () => {
       try {
         setLoading(true);
         setError(null);
-        const response = await fetch('http://localhost:8002/api/products/'); // <-- port corrigé
-        if (!response.ok) {
-          setError('Failed to fetch products.');
+        
+        // Récupérer les produits du service produit (port 8004)
+        const productResponse = await fetch('http://localhost:8004/api/products/');
+        let productData: Product[] = [];
+        if (productResponse.ok) {
+          productData = await productResponse.json();
+        }
+        
+        // Récupérer les produits du service vendeur (port 8005)
+        const sellerResponse = await fetch('http://localhost:8005/api/sellers/products/');
+        let sellerData: any[] = [];
+        if (sellerResponse.ok) {
+          sellerData = await sellerResponse.json();
+        }
+        
+        // LOGS DE DEBUG
+        console.log('productData', productData);
+        console.log('sellerData', sellerData);
+        
+        // Adapter les produits vendeurs au type Product attendu
+        const sellerProducts: Product[] = Array.isArray(sellerData) ? sellerData.map((p: any) => ({
+          ...p,
+          image_url: typeof p.image_url === 'object' && p.image_url !== null ? p.image_url.url : p.image_url,
+          rating: p.rating ?? 4.5,
+          review_count: p.review_count ?? 12,
+        })) : [];
+        
+        // Vérification de type
+        if (!Array.isArray(productData) || !Array.isArray(sellerProducts)) {
+          setError('Erreur de format des données produits');
           setProducts([]);
           return;
         }
-        const data = await response.json();
-        setProducts(data);
+        // Fusionner les deux listes de produits
+        const allProducts = [...productData, ...sellerProducts];
+        console.log('allProducts', allProducts);
+        setProducts(allProducts);
+        
       } catch (err) {
         setError('Failed to fetch products.');
         setProducts([]);
@@ -38,7 +68,8 @@ const ProductGrid: React.FC<ProductGridProps> = ({
         setLoading(false);
       }
     };
-    fetchProducts();
+    
+    fetchAllProducts();
   }, []);
 
   const displayProducts = limit ? products.slice(0, limit) : products;
@@ -61,9 +92,10 @@ const ProductGrid: React.FC<ProductGridProps> = ({
         {displayProducts.length === 0 ? (
           <div className="col-span-full text-center text-gray-500">No products found.</div>
         ) : (
-          displayProducts.map(product => (
-            <ProductCard key={product.id} product={product} />
-          ))
+          displayProducts.map(product => {
+            console.log('Rendering product', product);
+            return <ProductCard key={product.id} product={product} />;
+          })
         )}
       </div>
       {/* Debug: Affiche un message si une image n'est pas trouvée */}

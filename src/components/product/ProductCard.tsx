@@ -71,6 +71,10 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         
         <h3 className="text-sm font-medium line-clamp-2 mb-1 min-h-[40px]">{product.name}</h3>
         
+        {product.seller_name && (
+          <p className="text-xs text-gray-500 mb-1">Vendu par {product.seller_name}</p>
+        )}
+        
         {renderRating()}
         
         <div className="mt-2">

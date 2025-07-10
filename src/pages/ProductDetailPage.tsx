@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { Star, ChevronDown, ChevronUp, Check, Truck, ShieldCheck, MapPin } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { Product } from '../components/types';
@@ -7,6 +7,7 @@ import { Product } from '../components/types';
 const ProductDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const { addItem } = useCart();
+  const navigate = useNavigate();
   const [quantity, setQuantity] = useState(1);
   const [selectedImage, setSelectedImage] = useState(0);
   const [expandedSection, setExpandedSection] = useState<string | null>('description');
@@ -19,7 +20,7 @@ const ProductDetailPage: React.FC = () => {
       try {
         setLoading(true);
         setError(null);
-        const response = await fetch(`http://localhost:8002/api/products/${id}/`);
+        const response = await fetch(`http://localhost:8004/api/products/${id}/`);
         if (!response.ok) {
           setProduct(null);
           setError('Product not found.');
@@ -311,7 +312,25 @@ const ProductDetailPage: React.FC = () => {
                 Add to Cart
               </button>
               
-              <button className="btn btn-secondary w-full">
+              <button 
+                onClick={() => {
+                  if (product) {
+                    navigate('/payment', {
+                      state: {
+                        product: {
+                          id: product.id,
+                          name: product.name,
+                          price: product.price,
+                          image_url: product.image_url,
+                          quantity: quantity
+                        },
+                        quantity: quantity
+                      }
+                    });
+                  }
+                }}
+                className="btn btn-secondary w-full"
+              >
                 Buy Now
               </button>
               

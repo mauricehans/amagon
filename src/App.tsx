@@ -1,16 +1,15 @@
 import React from 'react';
-import { BrowserRouter as Router } from 'react-router-dom';
-import { CartProvider } from './context/CartContext';
+import { RouterProvider } from 'react-router-dom';
+import { router } from './routes';
 import { AuthProvider } from './context/AuthContext';
-import AppRoutes from './routes';
+import { CartProvider } from './context/CartContext';
+import './index.css';
 
 function App() {
   return (
     <AuthProvider>
       <CartProvider>
-        <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-          <AppRoutes />
-        </Router>
+        <RouterProvider router={router} future={{ v7_startTransition: true, v7_relativeSplatPath: true }} />
       </CartProvider>
     </AuthProvider>
   );
