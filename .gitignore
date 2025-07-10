@@ -1,6 +1,6 @@
-
 # Django / Python
 *.sqlite3
+__pycache__/
 
 # Node.js
 node_modules/
