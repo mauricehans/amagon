@@ -24,12 +24,12 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   };
 
   // Format price to show 2 decimal places
-  const formattedPrice = Number(product.price).toFixed(2);
+  const formattedPrice = Number(product.price || 0).toFixed(2);
 
   // Render rating stars
   const renderRating = () => {
     const stars = [];
-    const rating = product.rating || 0;
+    const rating = product.rating || 4.5;
     for (let i = 1; i <= 5; i++) {
       if (i <= rating) {
         stars.push(<Star key={i} size={16} className="fill-amazon-warning text-amazon-warning" />);
@@ -47,7 +47,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
     );
   };
 
-  // Correction de l'image principale
+  // Déterminer l'image principale
   let mainImage = "";
   if (product.images && product.images.length > 0) {
     const primary = product.images.find(img => img.is_primary);
@@ -58,18 +58,29 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
     mainImage = "https://via.placeholder.com/300x300?text=No+Image";
   }
 
+  // Vérifier que l'image est valide
+  if (!mainImage || mainImage === 'undefined' || mainImage === 'null') {
+    mainImage = "https://via.placeholder.com/300x300?text=No+Image";
+  }
+
   return (
     <div className="product-card group">
       <Link to={`/product/${product.id}`} className="block">
         <div className="relative pb-[100%] mb-3 bg-white overflow-hidden">
           <img 
             src={mainImage}
-            alt={product.name} 
+            alt={product.name || 'Produit'} 
             className="absolute top-0 left-0 w-full h-full object-contain transition-transform group-hover:scale-105"
+            onError={(e) => {
+              const target = e.target as HTMLImageElement;
+              target.src = "https://via.placeholder.com/300x300?text=No+Image";
+            }}
           />
         </div>
         
-        <h3 className="text-sm font-medium line-clamp-2 mb-1 min-h-[40px]">{product.name}</h3>
+        <h3 className="text-sm font-medium line-clamp-2 mb-1 min-h-[40px]">
+          {product.name || 'Produit sans nom'}
+        </h3>
         
         {product.seller_name && (
           <p className="text-xs text-gray-500 mb-1">Vendu par {product.seller_name}</p>
