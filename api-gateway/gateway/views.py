@@ -80,3 +80,62 @@ def admin_proxy(request):
         data=request.body if request.body else None,
     )
     return JsonResponse(response.json(), status=response.status_code)
+
+@api_view(['GET', 'POST', 'PUT', 'DELETE'])
+def search_proxy(request):
+    try:
+        target_url = f"{settings.MICROSERVICES['search']}{request.path}?{request.META['QUERY_STRING']}" if request.META['QUERY_STRING'] else f"{settings.MICROSERVICES['search']}{request.path}"
+        print(f"Search proxy: Forwarding request to {target_url}")
+        
+        # Headers à transmettre
+        headers = {key: value for key, value in request.headers.items() 
+                  if key.lower() not in ['host', 'content-length']}
+        
+        # Ajouter des headers CORS si nécessaire
+        headers['Content-Type'] = 'application/json'
+        
+        response = requests.request(
+            method=request.method,
+            url=target_url,
+            headers=headers,
+            data=request.body if request.body else None,
+            timeout=15,  # Timeout plus court
+            verify=False  # Ignorer les erreurs SSL en développement
+        )
+        
+        print(f"Search proxy: Response status {response.status_code}")
+        
+        # Vérifier que la réponse est valide
+        if response.status_code >= 400:
+            print(f"Search proxy: Error response {response.status_code}: {response.text}")
+            return JsonResponse(
+                {'error': f'Search service error: {response.status_code}'}, 
+                status=response.status_code
+            )
+        
+        return JsonResponse(response.json(), status=response.status_code)
+        
+    except requests.exceptions.Timeout:
+        print("Search proxy: Timeout error")
+        return JsonResponse(
+            {'error': 'Search service timeout'}, 
+            status=504
+        )
+    except requests.exceptions.ConnectionError:
+        print("Search proxy: Connection error")
+        return JsonResponse(
+            {'error': 'Search service unavailable'}, 
+            status=503
+        )
+    except requests.exceptions.RequestException as e:
+        print(f"Search proxy error: {e}")
+        return JsonResponse(
+            {'error': f'Search service error: {str(e)}'}, 
+            status=503
+        )
+    except Exception as e:
+        print(f"Search proxy unexpected error: {e}")
+        return JsonResponse(
+            {'error': 'Internal server error'}, 
+            status=500
+        )

@@ -40,5 +40,6 @@ class AuthMiddleware:
             '/api/auth/login',
             '/api/auth/register',
             '/api/products',
+            '/api/search',
         ]
         return not any(path.startswith(public_path) for public_path in public_paths)

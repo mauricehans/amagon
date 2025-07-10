@@ -98,6 +98,30 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
+    "http://localhost:3000",
+    "http://localhost:8010",
+]
+
+CORS_ALLOW_ALL_ORIGINS = True  # En développement seulement
+CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOW_METHODS = [
+    'DELETE',
+    'GET',
+    'OPTIONS',
+    'PATCH',
+    'POST',
+    'PUT',
+]
+CORS_ALLOW_HEADERS = [
+    'accept',
+    'accept-encoding',
+    'authorization',
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
 ]
 
 # Microservices URLs
@@ -110,6 +134,7 @@ MICROSERVICES = {
     'store': 'http://localhost:8006',
     'order': 'http://localhost:8007',
     'admin': 'http://localhost:8008',
+    'search': 'http://localhost:8010',
 }
 
 # JWT Settings

@@ -12,4 +12,5 @@ urlpatterns = [
     path('api/stores/', views.store_proxy),
     path('api/admin/', views.admin_proxy),
     path('api/support/', views.admin_proxy),  # Support tickets via admin service
+    path('api/search/', views.search_proxy),
 ]
