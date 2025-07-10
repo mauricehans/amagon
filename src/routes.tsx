@@ -23,6 +23,7 @@ import SellerProductDetailPage from './pages/seller/SellerProductDetailPage';
 import SellerProductUpdatePage from './pages/seller/SellerProductUpdatePage';
 import SellerOrdersPage from './pages/seller/SellerOrdersPage';
 import SellerAnalyticsPage from './pages/seller/SellerAnalyticsPage';
+import SearchResultsPage from './pages/SearchResultsPage';
 
 const AppRoutes = () => (
   <Routes>
@@ -51,6 +52,7 @@ const AppRoutes = () => (
         <main className="flex-grow">
           <Routes>
             <Route path="/" element={<HomePage />} />
+            <Route path="/search" element={<SearchResultsPage />} />
             <Route path="/product/:id" element={<ProductDetailPage />} />
             <Route path="/cart" element={<CartPage />} />
             <Route path="/checkout" element={<CheckoutPage />} />
